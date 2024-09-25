@@ -3,23 +3,21 @@ const express = require('express');
 const router = express.Router();
 
 router.get('/healthz', async (req, res) => {
-    // Check if request has any payload
-    if (Object.keys(req.body).length>0) {
-        console.log("req body",req.body);
+    if (Object.keys(req.body).length>0) { //check contents of request body
+        console.error("Reques body should be empty.");
         return res.status(400).end();
     }
-    if (Object.keys(req.query).length>0) {
-        console.log("req params");
+    if (Object.keys(req.query).length>0) { //check contents of request query parameters
+        console.error("Query parameters not allowed.");
         return res.status(400).end();
-    }
-    console.log('health route');
+    }    
 
 
     // Check database connection
     //const isDbConnected = await checkDbConnection();
 
     // Set cache-control headers
-    
+    console.log('Service health check successful.');    
     return res.status(200).end();
 
   
