@@ -12,11 +12,10 @@ const port = process.env.PORT || 3000;
 
 app.use(setHeaders);
 //only allows GET method
-app.use(allowedMethods("GET"));
 app.use(express.json());
 
-
-app.get('/healthz',healthCheck);
+app.use(/^\/healthz$/, allowedMethods("GET"));
+app.get(/^\/healthz$/,healthCheck);
 
 // Default response for all other paths
 app.all( "*", async (req, res) => {
