@@ -5,6 +5,8 @@ const allowedMethods = (...httpMethod) => {
         .map((method) => method.toUpperCase())
         .includes(req.method.toUpperCase())        
     ) {
+      console.error(`${req.method.toUpperCase()} Method not allowed`);
+
       return res.status(405).end();
     }
     next();

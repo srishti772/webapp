@@ -4,14 +4,8 @@ const router = express.Router();
 
 router.get("/healthz", async (req, res) => {
     
-  if (Object.keys(req.body).length > 0) {
-    //check contents of request body
-    console.error("Request body should be empty.");
-    return res.status(400).end();
-  }
-  if (Object.keys(req.query).length > 0) {
-    //check contents of request query parameters
-    console.error("Query parameters not allowed.");
+  if (Object.keys(req.body).length > 0 || Object.keys(req.query).length > 0) {
+    console.error("Request body and params should be empty.");
     return res.status(400).end();
   }
 
