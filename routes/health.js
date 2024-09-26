@@ -3,6 +3,7 @@ const checkDbConnection = require("../config/dbConnection");
 const router = express.Router();
 
 router.get("/healthz", async (req, res) => {
+    
   if (Object.keys(req.body).length > 0) {
     //check contents of request body
     console.error("Request body should be empty.");

@@ -53,7 +53,9 @@ Check the health of the application.
 
 - **Response**:
   - `200 OK` if the service is healthy.
-  - `500 Internal Server Error` if the service is not healthy.
+  - `400 Bad Request` if body is not empty or url contains query params.
+  - `503 Service Unavailable` If connection fails with MySQL .
+  - `405 Method Not Allowed` If any method other than GET is used to make  the request
 
 ## Docker Setup
 
