@@ -11,8 +11,9 @@ const basicAuth = async (req, res, next) => {
     }
     
     try{
-    await authService.authorize(authorization_header);
-   next(); 
+    const user = await authService.authorize(authorization_header);
+    req.authenticatedUser = user.email;
+    next(); 
 }
     catch(err){
         const dbError = new Error();

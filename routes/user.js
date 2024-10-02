@@ -6,8 +6,8 @@ const userController = require("../controller/userController");
 
 router.post("/", userController.createUser);
 
-router.get("/:email", basicAuth,userController.getAUser);
+router.get("/self", basicAuth,userController.getAUser);
 
-router.put("/:email", basicAuth,userController.updateUser);
+router.put("/self", basicAuth,userController.updateUser);
 
 module.exports = router;

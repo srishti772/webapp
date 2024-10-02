@@ -89,7 +89,7 @@ const createUser = (req, res, next) => {
 };
 
 const getAUser = (req, res, next) => {
-    const email = req.params.email;
+    const email = req.authenticatedUser;
   
     userService
       .getAUser(email)
@@ -104,7 +104,7 @@ const getAUser = (req, res, next) => {
 
   const updateUser = (req, res, next) => {
     const userData = req.body;
-    const userId = req.params.email;
+    const userId = req.authenticatedUser;
     const allowedField = new Set([
         "first_name",
         "last_name",
