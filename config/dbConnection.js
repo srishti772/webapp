@@ -14,7 +14,11 @@ const sequelize = new Sequelize(
 );
 
 const checkDbConnection = async () => {
-    return await sequelize.authenticate();
-  };
+  return await sequelize.authenticate();
+};
 
-module.exports = checkDbConnection;
+const syncDb = async () => {
+  return await sequelize.sync({ alter: true });
+};
+
+module.exports = { checkDbConnection, db: sequelize, syncDb };

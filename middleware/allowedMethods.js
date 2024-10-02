@@ -3,15 +3,15 @@ const allowedMethods = (...httpMethod) => {
     if (
       !httpMethod
         .map((method) => method.toUpperCase())
-        .includes(req.method.toUpperCase())        
+        .includes(req.method.toUpperCase())
     ) {
-      console.error(`${req.method.toUpperCase()} Method not allowed`);
-
-      return res.status(405).end();
+      const methoError = new Error();
+      methoError.statusCode = 405;
+      methoError.message = `${req.method.toUpperCase()} Method not allowed`;
+      return next(methoError);
     }
     next();
   };
 };
-
 
 module.exports = allowedMethods;
