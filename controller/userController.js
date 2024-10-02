@@ -1,21 +1,26 @@
 const userService = require("../service/userService");
 
-const validateUserFields = (userData, requiredfields, next) => {
-  for (const field of requiredfields) {
-    if (!userData[field]) {
-      const error = new Error(`Missing required field: ${field}`);
-      error.statusCode = 400;
-      return next(error);
-    }
+const validateUserFields = (userData, requiredfields, next, allowedField) => {
+ 
+
+  if(requiredfields) {
+    for (const field of requiredfields) {
+        if (!userData[field]) {
+          const error = new Error(`Missing required field: ${field}`);
+          error.statusCode = 400;
+          return next(error);
+        }
+      }
   }
+
+
+
   for (const field of Object.keys(userData)) {
-    if (!requiredfields.has(field)) {
+    if (!allowedField.has(field)) {
       const error = new Error(`Extra field not allowed: ${field}`);
       error.statusCode = 400;
       return next(error);
-    }
-  }
-
+    }}
   // Validate first_name and last_name (non-null strings)
   if (
     userData.first_name &&
@@ -64,7 +69,13 @@ const createUser = (req, res, next) => {
     "email",
     "password",
   ]);
-  const isValid = validateUserFields(userData, requiredfields, next);
+  const allowedField = new Set([
+    "first_name",
+    "last_name",
+    "email",
+    "password",
+  ]);
+  const isValid = validateUserFields(userData, requiredfields, next, allowedField);
   if (!isValid) return;
 
   userService
@@ -78,10 +89,10 @@ const createUser = (req, res, next) => {
 };
 
 const getAUser = (req, res, next) => {
-    const userId = req.params.id;
+    const email = req.params.email;
   
     userService
-      .getAUser(userId)
+      .getAUser(email)
       .then((user) => {
            return res.status(200).json(user);
       })
@@ -90,6 +101,26 @@ const getAUser = (req, res, next) => {
       });
   };
   
+
+  const updateUser = (req, res, next) => {
+    const userData = req.body;
+    const userId = req.params.email;
+    const allowedField = new Set([
+        "first_name",
+        "last_name",
+        "password",
+      ]);
+      const isValid = validateUserFields(userData, null, next, allowedField);
+      if (!isValid) return;
+    userService
+      .updateUser(userId, userData)
+      .then((updatedUser) => {
+            return res.status(204).end();
+      })
+      .catch((err) => {
+        return next(err);
+      });
+  };
 module.exports = {
-  createUser,getAUser
+  createUser,getAUser,updateUser
 };

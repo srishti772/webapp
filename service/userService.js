@@ -6,10 +6,13 @@ const getUserByEmail = async (email) => {
     const user = await userModel.findOne({
       where: { email },
     });
+  
+
     return user;
   } catch (err) {
-    console.error(err);
-    throw new Error("Unable to fetch user by email");
+    const dbError = new Error(`Unable to fetch user`);
+    dbError.statusCode = 404;
+    throw dbError;
   }
 };
 
@@ -17,7 +20,7 @@ const createUser = async (new_user) => {
   const existingUser = await getUserByEmail(new_user.email);
   if (existingUser) {
     const apiError = new Error("User already exists.");
-    apiError.statusCode = 409;
+    apiError.statusCode = 400;
     throw apiError;
   }
   try {
@@ -35,15 +38,15 @@ const createUser = async (new_user) => {
   }
 };
 
-const getAUser = async (id) => {
+const getAUser = async (email) => {
   try {
-    const user = await userModel.findByPk(id);
-    if (!user) {
-        const apiError = new Error("User not found.");
+    const existingUser = await getUserByEmail(email);
+    if (!existingUser) {
+        const apiError = new Error("User does not exist.");
         apiError.statusCode = 404;
         throw apiError;
-      }
-    return user;
+    }
+    return existingUser;
   } catch (err) {
     const dbError = new Error(`Unable to fetch user`);
     dbError.statusCode = 404;
@@ -51,6 +54,30 @@ const getAUser = async (id) => {
   }
 };
 
+const updateUser = async (email, user) => {
+  try {
+    const curruser = await getUserByEmail(email);
+    if (!curruser) {
+        const apiError = new Error("User does not exist.");
+        apiError.statusCode = 404;
+        throw apiError;
+    }
+    curruser.first_name = user.first_name ? user.first_name : curruser.first_name;
+    curruser.last_name = user.last_name ? user.last_name : curruser.last_name;
+    curruser.password = user.password? await bcrypt.hash(user.password, 10) : curruser.password;
+    curruser.email = user.email ? user.email : curruser.email;
+    curruser.account_updated=new Date();
+
+    await curruser.save();
+  } catch (err) {
+    const dbError = new Error("Unable to update user");
+    dbError.statusCode = 400;
+    throw dbError;
+  }
+};
+
 module.exports = {
-  createUser,getAUser
+  createUser,
+  getAUser,
+  updateUser,
 };
