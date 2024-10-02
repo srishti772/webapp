@@ -52,11 +52,7 @@ const userModel = db.define(
     defaultScope: {
       attributes: { exclude: ["password"] },
     },
-    scope: {
-      withPassword: {
-        attributes: {},
-      },
-    },
+ 
   }
 );
 
@@ -65,5 +61,9 @@ userModel.prototype.toJSON = function () {
   delete userObj.password;
   return userObj;
 };
+
+userModel.addScope('withPassword', {
+  attributes: { include: ['password'] },  
+});
 
 module.exports = userModel;

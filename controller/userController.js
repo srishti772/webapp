@@ -122,5 +122,5 @@ const getAUser = (req, res, next) => {
       });
   };
 module.exports = {
-  createUser,getAUser,updateUser
+  createUser,getAUser,updateUser,validateUserFields
 };

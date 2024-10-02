@@ -6,11 +6,9 @@ const getUserByEmail = async (email) => {
     const user = await userModel.findOne({
       where: { email },
     });
-  
-
-    return user;
+     return user;
   } catch (err) {
-    const dbError = new Error(`Unable to fetch user`);
+    const dbError = new Error(`Unable to fetchJ user`);
     dbError.statusCode = 404;
     throw dbError;
   }
@@ -32,8 +30,9 @@ const createUser = async (new_user) => {
     });
     return user.toJSON();
   } catch (err) {
-    const dbError = new Error("Unable to create user");
-    dbError.statusCode = 400;
+    const dbError = new Error();
+    dbError.message = err.message ||  "Unable to Create User";
+    dbError.statusCode =err.statusCode ||  400;
     throw dbError;
   }
 };
@@ -48,8 +47,9 @@ const getAUser = async (email) => {
     }
     return existingUser;
   } catch (err) {
-    const dbError = new Error(`Unable to fetch user`);
-    dbError.statusCode = 404;
+    const dbError = new Error();
+    dbError.message = err.message ||  "Unable to Fetch User";
+    dbError.statusCode =err.statusCode ||  404;
     throw dbError;
   }
 };
@@ -70,11 +70,14 @@ const updateUser = async (email, user) => {
 
     await curruser.save();
   } catch (err) {
-    const dbError = new Error("Unable to update user");
-    dbError.statusCode = 400;
+    const dbError = new Error();
+    dbError.message = err.message ||  "Unable to Update User";
+    dbError.statusCode =err.statusCode ||  400;
     throw dbError;
   }
 };
+
+
 
 module.exports = {
   createUser,
