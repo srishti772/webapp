@@ -5,7 +5,6 @@ const getUserByEmail = async (email) => {
   try {
     const user = await userModel.findOne({
       where: { email },
-      attributes: { exclude: ["password"] },
     });
     return user;
   } catch (err) {
@@ -36,6 +35,22 @@ const createUser = async (new_user) => {
   }
 };
 
+const getAUser = async (id) => {
+  try {
+    const user = await userModel.findByPk(id);
+    if (!user) {
+        const apiError = new Error("User not found.");
+        apiError.statusCode = 404;
+        throw apiError;
+      }
+    return user;
+  } catch (err) {
+    const dbError = new Error(`Unable to fetch user`);
+    dbError.statusCode = 404;
+    throw dbError;
+  }
+};
+
 module.exports = {
-  createUser,
+  createUser,getAUser
 };

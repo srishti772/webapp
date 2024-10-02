@@ -77,7 +77,19 @@ const createUser = (req, res, next) => {
     });
 };
 
-
+const getAUser = (req, res, next) => {
+    const userId = req.params.id;
+  
+    userService
+      .getAUser(userId)
+      .then((user) => {
+           return res.status(200).json(user);
+      })
+      .catch((err) => {
+        return next(err);
+      });
+  };
+  
 module.exports = {
-  createUser,
+  createUser,getAUser
 };
