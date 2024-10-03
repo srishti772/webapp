@@ -1,8 +1,14 @@
 const Sequelize = require("sequelize");
 require("dotenv").config();
 
+const env = process.env.NODE_ENV || "production";
+const databaseName = {
+  test: process.env.MYSQL_DATABASE_TEST || "test_db",
+  production: process.env.MYSQL_DATABASE_PROD || "prod_db",
+};
+console.log("ENVIRONMENT - ",env);
 const sequelize = new Sequelize(
-  process.env.MYSQL_DATABASE || "test",
+  databaseName[env] || "test",
   process.env.MYSQL_USER || "root",
   process.env.MYSQL_PASSWORD || "root",
   {
@@ -14,7 +20,11 @@ const sequelize = new Sequelize(
 );
 
 const checkDbConnection = async () => {
-    return await sequelize.authenticate();
-  };
+  return await sequelize.authenticate();
+};
 
-module.exports = checkDbConnection;
+const syncDb = async () => {
+  return await sequelize.sync({ alter: true });
+};
+
+module.exports = { checkDbConnection, db: sequelize, syncDb };

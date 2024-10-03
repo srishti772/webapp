@@ -91,3 +91,25 @@ The application requires the following environment variables:
 
 You can create a `.env` file in the root directory of your project with the above variables.
 
+## Testing 
+```bash
+npm i -D jest supertest
+```
+
+npm run test:unit
+Run Unit Tests Only
+To run only unit tests:
+
+bash
+Copy code
+npm run test:unit
+This will run only the tests located in files or directories matching the unit test pattern (e.g., files in the /tests/unit/ directory). The NODE_ENV is set to test during this process, meaning your test_db will be used.
+
+Run Integration Tests Only
+To run only integration tests:
+
+bash
+Copy code
+npm run test:integration
+This will run only the tests located in files or directories matching the integration test pattern (e.g., files in the /tests/integration/ directory). Like with unit tests, the NODE_ENV is set to test and the test_db is used.
+

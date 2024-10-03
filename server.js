@@ -1,30 +1,22 @@
-const express = require("express");
-const healthCheck = require("./routes/health");
-const errorHandler = require("./middleware/errorHandler");
-const allowedMethods = require("./middleware/allowedMethods");
-const setHeaders = require("./middleware/setHeaders");
-
+const { checkDbConnection, syncDb } = require("./config/dbConnection");
+const app = require("./app.js");
 require("dotenv").config();
 
-const app = express();
 const port = process.env.PORT || 3000;
+const startServer = async () => {
+  try {
+    await checkDbConnection();
+    await syncDb();
+    console.log("Database synced successfully.");
 
-app.use(setHeaders);
-app.use(express.json());
+    app.listen(port, () => {
+      console.log(`Server started on port ${port}`);
+    });
+  } catch (error) {
+    console.error("Unable to connect the database", error.message);
+    const apiError = new Error("Unable to sync the database.");
+    apiError.statusCode = 500;
+  }
+};
 
-app.use(/^\/healthz$/, allowedMethods("GET"));
-app.get(/^\/healthz$/, healthCheck);
-
-// Default response for all other paths
-app.all("*", async (req, res) => {
-  console.error("Path not allowed.");
-  return res.status(404).end();
-});
-
-//middleware to handle all errors
-app.use(errorHandler);
-
-// Start the server
-app.listen(port, () => {
-  console.log(`Server started on port ${port}`);
-});
+startServer();
