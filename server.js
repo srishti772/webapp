@@ -1,4 +1,3 @@
-
 const { checkDbConnection, syncDb } = require("./config/dbConnection");
 const app = require("./app.js");
 require("dotenv").config();
@@ -14,10 +13,9 @@ const startServer = async () => {
       console.log(`Server started on port ${port}`);
     });
   } catch (error) {
-    console.error("Unable to sync the database:", error.message);
+    console.error("Unable to connect the database", error.message);
     const apiError = new Error("Unable to sync the database.");
     apiError.statusCode = 500;
-    process.exit(1);
   }
 };
 

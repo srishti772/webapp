@@ -2,12 +2,18 @@ const bcrypt = require('bcrypt');
 const userModel = require('../model/userModel');
 
 const authorize = async (authorization_header) => {
-    const userData = new Buffer.from(authorization_header.split(' ')[1],'base64').toString().split(':');
+    try { const userData = new Buffer.from(authorization_header.split(' ')[1],'base64').toString().split(':');
     const email = userData[0];
     const password = userData[1];
     const user = await checkUserExists(email);
     await checkPassword(password, user.password);
-    return user.toJSON(); 
+    return user.toJSON(); }
+    catch (err) {
+        const dbError = new Error(err.message);
+            
+        dbError.statusCode = err.statusCode || 503; 
+        throw dbError;
+    }
 
 }
 
@@ -42,7 +48,8 @@ const login = async (email, password) => {
         return Buffer.from(`${email}:${password}`).toString('base64');
     } catch (err) {
         const dbError = new Error(err.message);
-        dbError.statusCode = err.statusCode || 400; 
+            
+        dbError.statusCode = err.statusCode || 503; 
         throw dbError;
     }
 };

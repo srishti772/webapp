@@ -8,8 +8,8 @@ const getUserByEmail = async (email) => {
     });
      return user;
   } catch (err) {
-    const dbError = new Error(`Unable to fetchJ user`);
-    dbError.statusCode = 404;
+    const dbError = new Error(`Unable to fetch user`);
+    dbError.statusCode = 503;
     throw dbError;
   }
 };
@@ -32,7 +32,7 @@ const createUser = async (new_user) => {
   } catch (err) {
     const dbError = new Error();
     dbError.message = err.message ||  "Unable to Create User";
-    dbError.statusCode =err.statusCode ||  400;
+    dbError.statusCode =err.statusCode ||  503;
     throw dbError;
   }
 };
@@ -49,7 +49,7 @@ const getAUser = async (email) => {
   } catch (err) {
     const dbError = new Error();
     dbError.message = err.message ||  "Unable to Fetch User";
-    dbError.statusCode =err.statusCode ||  404;
+    dbError.statusCode =err.statusCode ||  503;
     throw dbError;
   }
 };
@@ -72,7 +72,7 @@ const updateUser = async (email, user) => {
   } catch (err) {
     const dbError = new Error();
     dbError.message = err.message ||  "Unable to Update User";
-    dbError.statusCode =err.statusCode ||  400;
+    dbError.statusCode =err.statusCode ||  503;
     throw dbError;
   }
 };
