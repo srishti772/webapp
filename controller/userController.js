@@ -13,14 +13,6 @@ const validateUserFields = (userData, requiredfields, next, allowedField) => {
       }
   }
 
-
-
-  for (const field of Object.keys(userData)) {
-    if (!allowedField.has(field)) {
-      const error = new Error(`Extra field not allowed: ${field}`);
-      error.statusCode = 400;
-      return next(error);
-    }}
   // Validate first_name and last_name (non-null strings)
   if (
     userData.first_name &&
@@ -55,6 +47,12 @@ const validateUserFields = (userData, requiredfields, next, allowedField) => {
     error.statusCode = 400;
     return next(error);
   }
+
+  
+  for (const field of Object.keys(userData)) {
+    if (!allowedField.has(field)) {
+      console.log(`Extra field will be ignored: ${field}`);
+          }}
 
   return true;
 };

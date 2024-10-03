@@ -91,3 +91,8 @@ The application requires the following environment variables:
 
 You can create a `.env` file in the root directory of your project with the above variables.
 
+## Testing 
+```bash
+npm i -D jest supertest
+```
+

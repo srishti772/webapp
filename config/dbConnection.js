@@ -1,8 +1,13 @@
 const Sequelize = require("sequelize");
 require("dotenv").config();
 
+const env = process.env.NODE_ENV || "production";
+const databaseName = {
+  test: process.env.MYSQL_DATABASE_TEST || "test",
+  production: process.env.MYSQL_DATABASE_PROD || "prod_db",
+};
 const sequelize = new Sequelize(
-  process.env.MYSQL_DATABASE || "test",
+  databaseName[env] || "test",
   process.env.MYSQL_USER || "root",
   process.env.MYSQL_PASSWORD || "root",
   {
