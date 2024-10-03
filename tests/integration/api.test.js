@@ -2,7 +2,7 @@ const request = require("supertest");
 const app = require("../../app");
 const userModel = require("../../model/userModel");
 
-beforeEach(async () => {
+beforeAll(async () => {
   await userModel.sync({ force: true });
 });
 afterAll(async () => {
@@ -13,7 +13,7 @@ afterAll(async () => {
 describe("REGISTER USER POST /v1/user", () => {
   
   describe("Given valid user details", () => {
-    test("Should respond with 201 Created and the correct payload, then respond with 400 Bad Request for duplicate user", async () => {
+    test("Should respond with 201 Created and the correct payload", async () => {
       //Creating a new user
       const response = await request(app)
         .post("/v1/user")
@@ -45,7 +45,14 @@ describe("REGISTER USER POST /v1/user", () => {
       expect(fetched_user.last_name).toBe("Doe");
       expect(fetched_user.email).toBe("john.doe@example.com");
 
-      //Create same user again and expect a 400 Bad Request
+      
+    });
+  });
+
+  
+  describe("Given duplicate user details", () => {
+    test("Should respond with 400 Bad Request for duplicate user", async () => {
+      
       const duplicateResponse = await request(app)
         .post("/v1/user")
         .send({
@@ -58,6 +65,7 @@ describe("REGISTER USER POST /v1/user", () => {
       expect(duplicateResponse.status).toBe(400);
     });
   });
+
 
   describe("Given missing required fields", () => {
     const missingFieldsTests = [
@@ -76,4 +84,6 @@ describe("REGISTER USER POST /v1/user", () => {
       });
     });
   });
+
+
 });

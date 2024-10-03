@@ -13,6 +13,16 @@ const validateUserFields = (userData, requiredfields, next, allowedField) => {
       }
   }
 
+  if(allowedField) {
+  for (const field of Object.keys(userData)) {
+    if (!allowedField.has(field)) {
+     
+      const error = new Error(` ${field} Not allowed`);
+          error.statusCode = 400;
+          return next(error);
+          }}
+        }
+
   // Validate first_name and last_name (non-null strings)
   if (
     userData.first_name &&
@@ -49,11 +59,7 @@ const validateUserFields = (userData, requiredfields, next, allowedField) => {
   }
 
   
-  for (const field of Object.keys(userData)) {
-    if (!allowedField.has(field)) {
-      console.log(`Extra field will be ignored: ${field}`);
-          }}
-
+  
   return true;
 };
 
@@ -67,13 +73,8 @@ const createUser = (req, res, next) => {
     "email",
     "password",
   ]);
-  const allowedField = new Set([
-    "first_name",
-    "last_name",
-    "email",
-    "password",
-  ]);
-  const isValid = validateUserFields(userData, requiredfields, next, allowedField);
+ 
+  const isValid = validateUserFields(userData, requiredfields, next, null);
   if (!isValid) return;
 
   userService

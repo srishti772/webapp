@@ -3,9 +3,10 @@ require("dotenv").config();
 
 const env = process.env.NODE_ENV || "production";
 const databaseName = {
-  test: process.env.MYSQL_DATABASE_TEST || "test",
+  test: process.env.MYSQL_DATABASE_TEST || "test_db",
   production: process.env.MYSQL_DATABASE_PROD || "prod_db",
 };
+console.log("ENVIRONMENT - ",env);
 const sequelize = new Sequelize(
   databaseName[env] || "test",
   process.env.MYSQL_USER || "root",

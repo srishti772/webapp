@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
-    "test": "cross-env NODE_ENV=test jest",
-    "start": "cross-env NODE_ENV=development nodemon server.js"
+    "test:unit": "cross-env NODE_ENV=test jest --testPathPattern=unit",
+    "test:integration": "cross-env NODE_ENV=test jest --testPathPattern=integration",
+    "start": "cross-env NODE_ENV=production nodemon server.js"
   },
   "author": "",
   "license": "ISC",
