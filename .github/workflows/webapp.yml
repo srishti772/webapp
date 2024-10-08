@@ -52,11 +52,7 @@ jobs:
           done
           
       - name: Run Unit Tests
-        env:
-          NODE_ENV: test
         run: npm run test:unit
 
       - name: Run Integration Tests
-        env:
-          NODE_ENV: test
         run: npm run test:integration
