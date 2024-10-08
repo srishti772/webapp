@@ -49,11 +49,13 @@ jobs:
       - name: Manual MySQL Ping Check
         run: |
           echo "Checking MySQL service status..."
-          mysqladmin ping -h db -uroot -proot --silent
+          mysqladmin ping -h db -uroot -proot --silent || echo "Failed to ping MySQL. Checking error logs..."
           if [ $? -eq 0 ]; then
             echo "MySQL is running."
           else
             echo "MySQL is not running."
+            echo "Attempting to retrieve MySQL error log:"
+            docker logs $(docker ps -q --filter "name=db") || echo "No error logs available."
             exit 1
           fi
 
