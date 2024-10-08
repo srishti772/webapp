@@ -46,12 +46,6 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Wait for MySQL to be ready
-        run: |
-          until mysqladmin ping -h db -uroot -proot --silent; do
-            echo "Waiting for database connection..."
-            sleep 5
-          done
 
       - name: Run Unit Tests
         env:
