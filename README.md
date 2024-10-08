@@ -12,7 +12,6 @@ Webapp is a Node.js application built using Express that connects to a MySQL dat
 - [Docker Setup](#docker-setup)
 - [Environment Variables](#environment-variables)
 
-
 ## Installation
 
 1. Clone the repository using SSH:
@@ -55,7 +54,7 @@ Check the health of the application.
   - `200 OK` if the service is healthy.
   - `400 Bad Request` if body is not empty or url contains query params.
   - `503 Service Unavailable` If connection fails with MySQL .
-  - `405 Method Not Allowed` If any method other than GET is used to make  the request
+  - `405 Method Not Allowed` If any method other than GET is used to make the request
 
 ## Docker Setup
 
@@ -91,7 +90,8 @@ The application requires the following environment variables:
 
 You can create a `.env` file in the root directory of your project with the above variables.
 
-## Testing 
+## Testing 1
+
 ```bash
 npm i -D jest supertest
 ```
@@ -112,4 +112,3 @@ bash
 Copy code
 npm run test:integration
 This will run only the tests located in files or directories matching the integration test pattern (e.g., files in the /tests/integration/ directory). Like with unit tests, the NODE_ENV is set to test and the test_db is used.
-
