@@ -1,0 +1,57 @@
+name: CI for WebApp
+
+on:
+  pull_request:
+    branches:
+      - assignment-03
+  push:
+    branches:
+      - assignment-03
+
+env: # Commen env variables
+  MYSQL_HOST: db
+  MYSQL_USER: srishti772
+  MYSQL_PASSWORD: testpassword123
+  MYSQL_DATABASE_TEST: test_db
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      db:
+        image: mysql:latest
+        ports:
+          - 3306:3306
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: test_db
+          MYSQL_USER: srishti772
+          MYSQL_PASSWORD: testpassword123
+        options: >-
+          --health-cmd="mysqladmin ping -uroot -proot --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run Unit Tests
+        env:
+          NODE_ENV: test
+        run: npm run test:unit
+
+      - name: Run Integration Tests
+        env:
+          NODE_ENV: test
+        run: npm run test:integration
