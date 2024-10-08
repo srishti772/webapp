@@ -10,8 +10,8 @@ on:
 
 env: # Commen env variables
   MYSQL_HOST: db
-  MYSQL_USER: srishti772
-  MYSQL_PASSWORD: testpassword123
+  MYSQL_USER: root
+  MYSQL_PASSWORD: root
   MYSQL_DATABASE_TEST: test_db
 
 jobs:
@@ -26,8 +26,8 @@ jobs:
         env:
           MYSQL_ROOT_PASSWORD: root
           MYSQL_DATABASE: test_db
-          MYSQL_USER: srishti772
-          MYSQL_PASSWORD: testpassword123
+          MYSQL_USER: root
+          MYSQL_PASSWORD: root
         options: >-
           --health-cmd="mysqladmin ping -uroot -proot --silent"
           --health-interval=10s
