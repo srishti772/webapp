@@ -54,4 +54,10 @@ jobs:
         run: npm run test:unit
 
       - name: Run Integration Tests
+        env:
+          MYSQL_USER: ${{  secrets.MYSQL_USER_DEV }}
+          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD_DEV }}
+          MYSQL_HOST: ${{ vars.MYSQL_HOST_DEV }}
+          MYSQL_PORT: ${{ vars.MYSQL_PORT_DEV }}
+          MYSQL_DATABASE_TEST: ${{ vars.MYSQL_DATABASE_DEV }}
         run: npm run test:integration
