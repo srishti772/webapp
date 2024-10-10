@@ -88,18 +88,17 @@ const createUser = (req, res, next) => {
 };
 
 const getAUser = (req, res, next) => {
-  if ((req.body && Object.keys(req.body).length > 0)) {
+  if (req.body && Object.keys(req.body).length > 0) {
     const error = new Error("Req Body not allowed");
     error.statusCode = 400;
     return next(error);
-    
   }
   const email = req.authenticatedUser;
 
   userService
     .getAUser(email)
     .then((user) => {
-      return res.status(200).json(user);
+      return res.status(200).json(user)_
     })
     .catch((err) => {
       return next(err);
