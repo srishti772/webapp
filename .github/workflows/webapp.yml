@@ -10,13 +10,11 @@ env: # Common environment variables
   MYSQL_USER: ${{ secrets.MYSQL_USER }}
   MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
   MYSQL_DATABASE: ${{ vars.MYSQL_DATABASE }}
-  Test_secret: ${{ secrets.test }}
-  Test_var: ${{ var.a }}
 
 jobs:
   test:
     runs-on: ubuntu-latest
-
+    environment: dev
     services:
       db:
         image: mysql:latest
@@ -37,8 +35,8 @@ jobs:
 
       - name: Set up MySQL environment variables
         run: |
-          echo "Test Secret: $Test_secret"
-          echo "Test_var: $Test_var"
+          echo "Test Secret: ${{ secrets.test }}"
+          echo "Test_var: ${{ vars.a }}"
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
