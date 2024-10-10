@@ -1,12 +1,15 @@
-name: CI for WebApp#1
+name: CI for WebApp
 
 on:
   pull_request:
     branches:
       - main
 
-env:
-  MYSQL_HOST: ${{ secrets.MYSQL_HOST }}
+env: # Common environment variablesus
+  MYSQL_HOST: 127.0.0.1
+  MYSQL_USER: root
+  MYSQL_PASSWORD: root
+  MYSQL_DATABASE_TEST: test_db
 
 jobs:
   test:
@@ -16,12 +19,12 @@ jobs:
       db:
         image: mysql:latest
         ports:
-          - ${{ secrets.MYSQL_PORT }}:3306
+          - 3306:3306
         env:
-          MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
-          MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE_TEST }}
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: test_db
         options: >-
-          --health-cmd="mysqladmin ping -uroot -p${{ secrets.MYSQL_PASSWORD }} --silent"
+          --health-cmd="mysqladmin ping -uroot -proot --silent"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=3
@@ -39,12 +42,8 @@ jobs:
         run: npm install
 
       - name: Wait for MySQL to be ready
-        env:
-          MYSQL_USER: ${{ secrets.MYSQL_USER }}
-          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
-          MYSQL_HOST: ${{ secrets.MYSQL_HOST }}
         run: |
-          until mysqladmin ping -h $MYSQL_HOST -u$MYSQL_USER -p$MYSQL_PASSWORD --silent; do
+          until mysqladmin ping -h 127.0.0.1 -uroot -proot --silent; do
             echo "Waiting for database connection..."
             sleep 5
           done
