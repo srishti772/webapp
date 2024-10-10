@@ -98,7 +98,7 @@ const getAUser = (req, res, next) => {
   userService
     .getAUser(email)
     .then((user) => {
-      return res.status(200).json(user)_
+      return res.status(200).json(user);
     })
     .catch((err) => {
       return next(err);
