@@ -5,26 +5,21 @@ on:
     branches:
       - main
 
-env: # Common environment variables
-  MYSQL_HOST: ${{ vars.MYSQL_HOST }}
-  MYSQL_USER: ${{ secrets.MYSQL_USER }}
-  MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
-  MYSQL_DATABASE: ${{ vars.MYSQL_DATABASE }}
-
 jobs:
   test:
     runs-on: ubuntu-latest
-    environment: dev
+    environment: dev 
+
     services:
       db:
         image: mysql:latest
         ports:
           - 3306:3306
         env:
-          MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
-          MYSQL_DATABASE: ${{ vars.MYSQL_DATABASE }}
+          MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_PASSWORD_DEV }}  
+          MYSQL_DATABASE: ${{ vars.MYSQL_DATABASE_DEV }}          
         options: >-
-          --health-cmd="mysqladmin ping -u$MYSQL_USER -p$MYSQL_PASSWORD --silent"
+          --health-cmd="mysqladmin ping -u${{ secrets.MYSQL_USER_DEV }} -p${{ secrets.MYSQL_PASSWORD_DEV }} --silent"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=3
@@ -33,10 +28,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up MySQL environment variables
+      - name: Print environment variables and secrets
         run: |
+          echo "MYSQL_HOST: ${{ vars.MYSQL_HOST_DEV }}"
+          echo "MYSQL_USER: ${{ secrets.MYSQL_USER_DEV }}"
+          echo "MYSQL_PASSWORD: [REDACTED]"  # Do not print passwords
+          echo "MYSQL_DATABASE: ${{ vars.MYSQL_DATABASE_DEV }}"
           echo "Test Secret: ${{ secrets.test }}"
-          echo "Test_var: ${{ vars.a }}"
+          echo "Test_var: ${{ vars.a }}"  # Ensure that 'a' is set in your dev environment
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -48,7 +47,7 @@ jobs:
 
       - name: Wait for MySQL to be ready
         run: |
-          until mysqladmin ping -h $MYSQL_HOST -u$MYSQL_USER -p$MYSQL_PASSWORD --silent; do
+          until mysqladmin ping -h ${{ vars.MYSQL_HOST_DEV }} -u${{ secrets.MYSQL_USER_DEV }} -p${{ secrets.MYSQL_PASSWORD_DEV }} --silent; do
             echo "Waiting for database connection..."
             sleep 5
           done
