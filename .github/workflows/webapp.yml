@@ -9,7 +9,7 @@ env: # Common environment variables
   MYSQL_HOST: ${{ vars.MYSQL_HOST }}
   MYSQL_USER: ${{ secrets.MYSQL_USER }}
   MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
-  MYSQL_DATABASE_TEST: ${{ vars.MYSQL_DATABASE }}
+  MYSQL_DATABASE: ${{ vars.MYSQL_DATABASE }}
 
 jobs:
   test:
@@ -22,7 +22,7 @@ jobs:
           - 3306:3306
         env:
           MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
-          MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
+          MYSQL_DATABASE: ${{ vars.MYSQL_DATABASE }}
         options: >-
           --health-cmd="mysqladmin ping -u$MYSQL_USER -p$MYSQL_PASSWORD --silent"
           --health-interval=10s
