@@ -24,7 +24,7 @@ jobs:
           MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
           MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
         options: >-
-          --health-cmd="mysqladmin ping -u$env:MYSQL_USER -p$env:MYSQL_PASSWORD --silent"
+          --health-cmd="mysqladmin ping -u$MYSQL_USER -p$MYSQL_PASSWORD --silent"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=3
@@ -46,7 +46,7 @@ jobs:
           echo "Trying to connect to MySQL with the following details:"
           echo "MYSQL_HOST: $MYSQL_HOST"
           echo "MYSQL_USER: $MYSQL_USER"
-          echo "MYSQL_PASSWORD: $env.MYSQL_PASSWORD"
+          echo "MYSQL_PASSWORD: $MYSQL_PASSWORD"
 
       - name: Wait for MySQL to be ready
         run: |
