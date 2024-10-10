@@ -41,6 +41,13 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Checking credentials
+        run: |
+          echo "Trying to connect to MySQL with the following details:"
+          echo "MYSQL_HOST: $MYSQL_HOST"
+          echo "MYSQL_USER: $MYSQL_USER"
+          echo "MYSQL_PASSWORD: $env.MYSQL_PASSWORD"
+
       - name: Wait for MySQL to be ready
         run: |
           until mysqladmin ping -h $env.MYSQL_HOST -u$env.MYSQL_USER -p$env.MYSQL_PASSWORD --silent; do
