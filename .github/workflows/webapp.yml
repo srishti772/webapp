@@ -48,13 +48,6 @@ jobs:
           echo "MYSQL_USER: $MYSQL_USER"
           echo "MYSQL_PASSWORD: $MYSQL_PASSWORD"
 
-      - name: Wait for MySQL to be ready
-        run: |
-          until mysqladmin ping -h $MYSQL_HOST -u$MYSQL_USER -p$MYSQL_PASSWORD --silent; do
-            echo "Waiting for database connection..."
-            sleep 5
-          done
-
       - name: Run Unit Tests
         run: npm run test:unit
 
