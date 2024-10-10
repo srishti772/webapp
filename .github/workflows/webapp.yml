@@ -16,7 +16,7 @@ jobs:
       db:
         image: mysql:latest
         ports:
-          - ${{ secrets.MYSQL_HOST }}:3306
+          - ${{ secrets.MYSQL_PORT }}:3306
         env:
           MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
           MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE_TEST }}
