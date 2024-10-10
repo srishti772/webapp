@@ -1,27 +1,25 @@
 const userService = require("../service/userService");
 
 const validateUserFields = (userData, requiredfields, next, allowedField) => {
- 
-
-  if(requiredfields) {
+  if (requiredfields) {
     for (const field of requiredfields) {
-        if (!userData[field]) {
-          const error = new Error(`Missing required field: ${field}`);
-          error.statusCode = 400;
-          return next(error);
-        }
+      if (!userData[field]) {
+        const error = new Error(`Missing required field: ${field}`);
+        error.statusCode = 400;
+        return next(error);
       }
+    }
   }
 
-  if(allowedField) {
-  for (const field of Object.keys(userData)) {
-    if (!allowedField.has(field)) {
-     
-      const error = new Error(` ${field} Not allowed`);
-          error.statusCode = 400;
-          return next(error);
-          }}
-        }
+  if (allowedField) {
+    for (const field of Object.keys(userData)) {
+      if (!allowedField.has(field)) {
+        const error = new Error(` ${field} Not allowed`);
+        error.statusCode = 400;
+        return next(error);
+      }
+    }
+  }
 
   // Validate first_name and last_name (non-null strings)
   if (
@@ -58,11 +56,8 @@ const validateUserFields = (userData, requiredfields, next, allowedField) => {
     return next(error);
   }
 
-  
-  
   return true;
 };
-
 
 const createUser = (req, res, next) => {
   const userData = req.body;
@@ -73,8 +68,13 @@ const createUser = (req, res, next) => {
     "email",
     "password",
   ]);
- 
-  const isValid = validateUserFields(userData, requiredfields, next, null);
+
+  const isValid = validateUserFields(
+    userData,
+    requiredfields,
+    next,
+    requiredfields
+  );
   if (!isValid) return;
 
   userService
@@ -88,38 +88,42 @@ const createUser = (req, res, next) => {
 };
 
 const getAUser = (req, res, next) => {
-    const email = req.authenticatedUser;
-  
-    userService
-      .getAUser(email)
-      .then((user) => {
-           return res.status(200).json(user);
-      })
-      .catch((err) => {
-        return next(err);
-      });
-  };
-  
+  if ((req.body && Object.keys(req.body).length > 0)) {
+    const error = new Error("Req Body not allowed");
+    error.statusCode = 400;
+    return next(error);
+    
+  }
+  const email = req.authenticatedUser;
 
-  const updateUser = (req, res, next) => {
-    const userData = req.body;
-    const userId = req.authenticatedUser;
-    const allowedField = new Set([
-        "first_name",
-        "last_name",
-        "password",
-      ]);
-      const isValid = validateUserFields(userData, null, next, allowedField);
-      if (!isValid) return;
-    userService
-      .updateUser(userId, userData)
-      .then((updatedUser) => {
-            return res.status(204).end();
-      })
-      .catch((err) => {
-        return next(err);
-      });
-  };
+  userService
+    .getAUser(email)
+    .then((user) => {
+      return res.status(200).json(user);
+    })
+    .catch((err) => {
+      return next(err);
+    });
+};
+
+const updateUser = (req, res, next) => {
+  const userData = req.body;
+  const userId = req.authenticatedUser;
+  const allowedField = new Set(["first_name", "last_name", "password"]);
+  const isValid = validateUserFields(userData, null, next, allowedField);
+  if (!isValid) return;
+  userService
+    .updateUser(userId, userData)
+    .then((updatedUser) => {
+      return res.status(204).end();
+    })
+    .catch((err) => {
+      return next(err);
+    });
+};
 module.exports = {
-  createUser,getAUser,updateUser,validateUserFields
+  createUser,
+  getAUser,
+  updateUser,
+  validateUserFields,
 };
