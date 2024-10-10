@@ -88,11 +88,10 @@ const createUser = (req, res, next) => {
 };
 
 const getAUser = (req, res, next) => {
-  if ((req.body && Object.keys(req.body).length > 0)) {
+  if (req.body && Object.keys(req.body).length > 0) {
     const error = new Error("Req Body not allowed");
     error.statusCode = 400;
     return next(error);
-    
   }
   const email = req.authenticatedUser;
 
