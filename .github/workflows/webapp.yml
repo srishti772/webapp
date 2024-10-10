@@ -17,9 +17,12 @@ jobs:
           - 3306:3306
         env:
           MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_PASSWORD_DEV }}  
-          MYSQL_DATABASE: ${{ vars.MYSQL_DATABASE_DEV }}          
+          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD_DEV }}  
+          MYSQL_DATABASE: ${{ vars.MYSQL_DATABASE_DEV }}
+          MYSQL_USER: ${{  secrets.MYSQL_USER_DEV }}    
+          MYSQL_HOST: ${{ vars.MYSQL_HOST_DEV }}    
         options: >-
-          --health-cmd="mysqladmin ping -u${{ secrets.MYSQL_USER_DEV }} -p${{ secrets.MYSQL_PASSWORD_DEV }} --silent"
+          --health-cmd="mysqladmin ping -u$MYSQL_USER -p$MYSQL_PASSWORD --silent"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=3
@@ -47,7 +50,7 @@ jobs:
 
       - name: Wait for MySQL to be ready
         run: |
-          until mysqladmin ping -h ${{ vars.MYSQL_HOST_DEV }} -u${{ secrets.MYSQL_USER_DEV }} -p${{ secrets.MYSQL_PASSWORD_DEV }} --silent; do
+          until mysqladmin ping -h $MYSQL_HOST -u$MYSQL_USER -p$MYSQL_PASSWORD --silent; do
             echo "Waiting for database connection..."
             sleep 5
           done
