@@ -3,16 +3,10 @@ name: CI for WebApp
 on:
   pull_request:
     branches:
-      - assignment-03
-  push:
-    branches:
-      - assignment-03
+      - main
 
-env: # Commen env variables
-  MYSQL_HOST: db
-  MYSQL_USER: srishti772
-  MYSQL_PASSWORD: testpassword123
-  MYSQL_DATABASE_TEST: test_db
+env:
+  MYSQL_HOST: ${{ secrets.MYSQL_HOST }}
 
 jobs:
   test:
@@ -22,14 +16,12 @@ jobs:
       db:
         image: mysql:latest
         ports:
-          - 3306:3306
+          - ${{ secrets.MYSQL_HOST }}:3306
         env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: test_db
-          MYSQL_USER: srishti772
-          MYSQL_PASSWORD: testpassword123
+          MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+          MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE_TEST }}
         options: >-
-          --health-cmd="mysqladmin ping -uroot -proot --silent"
+          --health-cmd="mysqladmin ping -uroot -p${{ secrets.MYSQL_PASSWORD }} --silent"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=3
@@ -47,18 +39,18 @@ jobs:
         run: npm install
 
       - name: Wait for MySQL to be ready
+        env:
+          MYSQL_USER: ${{ secrets.MYSQL_USER }}
+          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+          MYSQL_HOST: ${{ secrets.MYSQL_HOST }}
         run: |
-          until mysqladmin ping -h db -uroot -proot --silent; do
+          until mysqladmin ping -h $MYSQL_HOST -u$MYSQL_USER -p$MYSQL_PASSWORD --silent; do
             echo "Waiting for database connection..."
             sleep 5
           done
 
       - name: Run Unit Tests
-        env:
-          NODE_ENV: test
         run: npm run test:unit
 
       - name: Run Integration Tests
-        env:
-          NODE_ENV: test
         run: npm run test:integration
