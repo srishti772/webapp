@@ -41,12 +41,12 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Checking credentials
+      - name: Wait for MySQL to be ready
         run: |
-          echo "Trying to connect to MySQL with the following details:"
-          echo "MYSQL_HOST: $MYSQL_HOST"
-          echo "MYSQL_USER: $MYSQL_USER"
-          echo "MYSQL_PASSWORD: $MYSQL_PASSWORD"
+          until mysqladmin ping -h $MYSQL_HOST -u$MYSQL_USER -p$MYSQL_PASSWORD --silent; do
+            echo "Waiting for database connection..."
+            sleep 5
+          done
 
       - name: Run Unit Tests
         run: npm run test:unit
