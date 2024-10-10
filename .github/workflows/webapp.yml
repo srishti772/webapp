@@ -6,10 +6,10 @@ on:
       - main
 
 env: # Common environment variables
-  MYSQL_HOST: ${{ secrets.MYSQL_HOST }}
+  MYSQL_HOST: ${{ vars.MYSQL_HOST }}
   MYSQL_USER: ${{ secrets.MYSQL_USER }}
   MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
-  MYSQL_DATABASE_TEST: ${{ secrets.MYSQL_DATABASE }}
+  MYSQL_DATABASE_TEST: ${{ vars.MYSQL_DATABASE }}
 
 jobs:
   test:
