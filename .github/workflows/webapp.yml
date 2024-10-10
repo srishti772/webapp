@@ -1,0 +1,56 @@
+name: CI for WebApp
+
+on:
+  pull_request:
+    branches:
+      - main
+
+env:
+  MYSQL_HOST: ${{ secrets.MYSQL_HOST }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      db:
+        image: mysql:latest
+        ports:
+          - ${{ secrets.MYSQL_HOST }}:3306
+        env:
+          MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+          MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE_TEST }}
+        options: >-
+          --health-cmd="mysqladmin ping -uroot -p${{ secrets.MYSQL_PASSWORD }} --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Wait for MySQL to be ready
+        env:
+          MYSQL_USER: ${{ secrets.MYSQL_USER }}
+          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+          MYSQL_HOST: ${{ secrets.MYSQL_HOST }}
+        run: |
+          until mysqladmin ping -h $MYSQL_HOST -u$MYSQL_USER -p$MYSQL_PASSWORD --silent; do
+            echo "Waiting for database connection..."
+            sleep 5
+          done
+
+      - name: Run Unit Tests
+        run: npm run test:unit
+
+      - name: Run Integration Tests
+        run: npm run test:integration
