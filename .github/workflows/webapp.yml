@@ -33,7 +33,7 @@ jobs:
 
       - name: Grant Privileges to MySQL User
         run: |
-          mysql -h ${{ vars.MYSQL_HOST_DEV }} -u root -p$MYSQL_ROOT_PASSWORD -e "GRANT ALL PRIVILEGES ON *.* TO '$MYSQL_USER'@'%' WITH GRANT OPTION;"
+          mysql -h ${{ vars.MYSQL_HOST_DEV }} -u ${{ secrets.MYSQL_ROOTUSER }} -p${{ secrets.MYSQL_PASSWORD_DEV }} -e "GRANT ALL PRIVILEGES ON *.* TO '${{  secrets.MYSQL_USER_DEV }}'@'%' WITH GRANT OPTION;"
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
