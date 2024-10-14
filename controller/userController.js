@@ -1,6 +1,6 @@
 const userService = require("../service/userService");
 
-const validateUserFields = (userData, requiredfields, next, allowedField) => {
+const blablabla = (userData, requiredfields, next, allowedField) => {
   if (requiredfields) {
     for (const field of requiredfields) {
       if (!userData[field]) {
