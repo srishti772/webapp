@@ -72,7 +72,7 @@ variable "AWS_PROFILE" {
 # AMI
 source "amazon-ebs" "custom-ami" {
   profile       = "${var.AWS_PROFILE}"
-  ami_name      = "${var.AMI_DESCRIPTION}_${formatdate("YYYY_MM_DD_hh_mm_ss", timestamp())}"
+  ami_name      = "${var.AMI_DESCRIPTION}_${formatdate("YYYY-MM-DD-hh:mm:ss", timestamp())}"
   instance_type = "${var.INSTANCE_TYPE}"
   region        = "${var.AWS_REGION}"
 

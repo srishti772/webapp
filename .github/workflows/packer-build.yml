@@ -1,0 +1,48 @@
+name: Packer Build
+
+on:
+  push:
+    branches:
+      - main
+      - A04
+
+jobs:
+  packer-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Zip Web App
+        run: zip -r webapp.zip .
+
+      - name: Set up AWS CLI
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ var.AWS_REGION }}
+
+      - name: Set AWS Profile
+        run: echo "AWS_PROFILE=my-custom-profile" >> $ ${{ var.AWS_PROFILE }}
+
+      - name: Set up Packer
+        uses: hashicorp/setup-packer@main
+        with:
+          packer_version: ${{ vars.PACKER_VERSION }}
+
+      - name: Run Packer init
+        run: |
+          cd packer 
+          packer init ./custom-ami.pkr.hcl
+
+      - name: Build Image
+        id: build
+        run: |
+          cd packer 
+          packer build \
+            -var-file='./variables.pkr.hcl' \
+            -var "AWS_REGION=${{ var.AWS_REGION }}" \
+            -var "AWS_PROFILE=${{ var.AWS_PROFILE }}" \
+            ./custom-ami.pkr.hcl

@@ -87,14 +87,6 @@ echo "Verifying .env file contents:"
 echo "========================================"
 cat "$ENV_FILE"
 
-echo "========================================"
-echo "Starting the application..."
-echo "========================================"
-nohup npm start &
-
-echo "========================================"
-echo "Application started successfully"
-
 EOF
 
 #Verify ownership and permissions
