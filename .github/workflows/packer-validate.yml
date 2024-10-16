@@ -16,13 +16,13 @@ jobs:
       - name: Zip Web App
         run: zip -r webapp.zip .
 
+      - name: Change directory to Packer
+        run: cd packer
+
       - name: Set up Packer
         uses: hashicorp/setup-packer@main
         with:
           packer_version: ${{ vars.PACKER_VERSION }}
-
-      - name: Change directory to Packer
-        run: cd packer
 
       - name: Run Packer init
         run: packer init custom-ami.pkr.hcl
