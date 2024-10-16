@@ -12,4 +12,4 @@ AMI_DESCRIPTION = "Assignment_04_AMI"
 SSH_USER        = "ubuntu"
 VPC_IS_DEFAULT  = "true"
 AMI_USERS       = ["664418960750", "537124970289"]
-AWS_PROFILE     = "dev"
+AWS_PROFILE     = "packer"

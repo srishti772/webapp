@@ -55,6 +55,11 @@ CREATE DATABASE $DATABASE2;
 FLUSH PRIVILEGES;
 EOF
 
+echo "========================================"
+echo " Remove GIT if exists"
+echo "========================================"
+sudo apt remove -y git
+
 
 echo "========================================"
 echo " SystemD Setup"

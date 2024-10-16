@@ -66,15 +66,18 @@ variable "AMI_USERS" {
 
 variable "AWS_PROFILE" {
   type    = string
-  default = "dev"
+  default = "packer"
 }
+
+
 
 # AMI
 source "amazon-ebs" "custom-ami" {
-  profile       = "${var.AWS_PROFILE}"
-  ami_name      = "${var.AMI_DESCRIPTION}_${formatdate("YYYY-MM-DD-hh.mm.ss", timestamp())}"
-  instance_type = "${var.INSTANCE_TYPE}"
-  region        = "${var.AWS_REGION}"
+  profile         = "${var.AWS_PROFILE}"
+  ami_name        = "${var.AMI_NAME}_${formatdate("YYYY-MM-DD-hh.mm.ss", timestamp())}"
+  ami_description = "${var.AMI_DESCRIPTION}"
+  instance_type   = "${var.INSTANCE_TYPE}"
+  region          = "${var.AWS_REGION}"
 
   #Dev and Demo account ID with permission to use the AMI
   ami_users = "${var.AMI_USERS}"
@@ -84,6 +87,7 @@ source "amazon-ebs" "custom-ami" {
       root-device-type    = "${var.AMI_SOURCE_ROOT_DEVICE_TYPE}"
       virtualization-type = "${var.AMI_SOURCE_VIRTUALIZATION}"
     }
+
     most_recent = true
     owners      = "${var.SOURCE_AMI_OWNERS}"
   }

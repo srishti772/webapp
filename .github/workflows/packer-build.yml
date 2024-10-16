@@ -19,10 +19,6 @@ jobs:
       - name: Zip Web App
         run: zip -r webapp.zip .
 
-      - name: Echo AWS configuration (without sensitive data)
-        run: |
-          echo "AWS Region: ${{ vars.AWS_REGION }}"
-
       - name: Set up AWS CLI
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -33,7 +29,7 @@ jobs:
       - name: Set up Packer
         uses: hashicorp/setup-packer@main
         with:
-          packer_version: ${{ vars.PACKER_VERSION }}
+          version: ${{ vars.PACKER_VERSION }}
 
       - name: Run Packer init
         run: |
@@ -49,3 +45,12 @@ jobs:
             -var "AWS_REGION=${{ vars.AWS_REGION }}" \
             -var "AWS_PROFILE=${{ vars.AWS_PROFILE }}" \
             ./custom-ami.pkr.hcl
+      
+      - name: List files
+        run: ls -la      
+        
+      - name: Upload Manifest
+        uses: actions/upload-artifact@v2
+        with:
+          name: packer-manifest
+          path: manifest.json

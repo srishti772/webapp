@@ -19,7 +19,7 @@ jobs:
       - name: Set up Packer
         uses: hashicorp/setup-packer@main
         with:
-          packer_version: ${{ vars.PACKER_VERSION }}
+          version: ${{ vars.PACKER_VERSION }}
 
       - name: Run Packer init
         run: |
