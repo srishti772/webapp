@@ -21,7 +21,7 @@ jobs:
       - name: Run Packer fmt
         id: packer-fmt
         run: |
-          packer fmt -check -recursive ./packer/*.pkr.hcl
+          packer fmt -check=true ./packer/*.pkr.hcl
         continue-on-error: true
 
       - name: Check for Packer fmt modifications
