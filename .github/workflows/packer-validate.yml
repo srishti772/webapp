@@ -29,11 +29,12 @@ jobs:
       - name: Run Packer fmt
         id: packer-fmt
         run: |
-          if ! packer fmt -check=true custom-ami.pkr.hcl; then
+          ls
+          if ! packer fmt -check=true ./custom-ami.pkr.hcl; then
             echo "Formatting check failed for custom-ami.pkr.hcl"
             exit 1
           fi
-          if ! packer fmt -check=true variables.pkr.hcl; then
+          if ! packer fmt -check=true ./variables.pkr.hcl; then
             echo "Formatting check failed for variables.pkr.hcl"
             exit 1
           fi
