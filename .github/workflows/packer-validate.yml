@@ -35,7 +35,7 @@ jobs:
 
       - name: Run Packer validate
         run: |
-          if ! packer validate ./packer/custom-ami.pkr.hcl; then
+          if ! packer validate -var-file=./packer/variables.pkr.hcl ./packer/custom-ami.pkr.hcl; then
             echo "Validation failed for custom-ami.pkr.hcl"
             exit 1
           fi
