@@ -116,6 +116,7 @@ build {
     scripts = [
       "scripts/updateSystem.sh",
       "scripts/installSoftware.sh",
+      "scripts/setupApp.sh",
     ]
   }
 
