@@ -11,7 +11,6 @@ packer {
 # SOURCE AMI FILTERS
 variable "AMI_SOURCE_DESCRIPTION" {
   type    = string
-  default = "*Ubuntu*, *24.04*, *LTS*, *amd64*"
 }
 
 variable "AMI_SOURCE_ROOT_DEVICE_TYPE" {
@@ -47,7 +46,7 @@ variable "INSTANCE_TYPE" {
 
 variable "AMI_DESCRIPTION" {
   type    = string
-  default = "Assignment 04 AMI"
+  default = "Assignment_04_AMI"
 }
 
 variable "SSH_USER" {
@@ -73,11 +72,12 @@ variable "AWS_PROFILE" {
 # AMI
 source "amazon-ebs" "custom-ami" {
   profile       = "${var.AWS_PROFILE}"
-  ami_name      = "${var.AMI_NAME}"
+  ami_name      = "${var.AMI_DESCRIPTION}_${formatdate("YYYY_MM_DD_hh_mm_ss", timestamp())}"
   instance_type = "${var.INSTANCE_TYPE}"
   region        = "${var.AWS_REGION}"
+
   #Dev and Demo account ID with permission to use the AMI
-  ami_users = "${var.AMI_USERS}"
+  ami_users  = "${var.AMI_USERS}"
   source_ami_filter {
     filters = {
       description         = "${var.AMI_SOURCE_DESCRIPTION}"
@@ -103,14 +103,6 @@ build {
   sources = [
     "source.amazon-ebs.custom-ami"
   ]
-
-  provisioner "shell" {
-    scripts = [
-      "scripts/updateSystem.sh",
-      "scripts/installSoftware.sh",
-    ]
-  }
-
   provisioner "file" {
     source      = "../webapp.zip"
     destination = "~/webapp.zip"
@@ -120,8 +112,12 @@ build {
     source      = "../webapp.service"
     destination = "~/webapp.service"
   }
-
   provisioner "shell" {
-    script = "scripts/appSetup.sh"
+    scripts = [
+      "scripts/updateSystem.sh",
+      "scripts/installSoftware.sh",
+    ]
   }
+
+
 }
