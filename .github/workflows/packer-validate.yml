@@ -22,14 +22,7 @@ jobs:
         id: packer-fmt
         run: |
           packer fmt -check=true ./packer/*.pkr.hcl
-        continue-on-error: true
-
-      - name: Check for Packer fmt modifications
-        if: steps.packer-fmt.outcome == 'failure'
-        run: |
-          echo "modifications found by packer fmt command."
-          exit 1
-
+   
       - name: Run Packer validate
         run: |
           packer validate ./packer/custom-ami.pkr.hcl
