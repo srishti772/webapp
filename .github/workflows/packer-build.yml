@@ -4,8 +4,8 @@ on:
   push:
     branches:
       - main
-      - A04
-
+      
+  workflow_dispatch: 
 jobs:
   packer-build:
     runs-on: ubuntu-latest
