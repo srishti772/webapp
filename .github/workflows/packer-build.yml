@@ -4,7 +4,11 @@ on:
   push:
     branches:
       - main
-      
+on:
+  pull_request:
+    branches:
+      - main
+            
   workflow_dispatch: 
 jobs:
   packer-build:
