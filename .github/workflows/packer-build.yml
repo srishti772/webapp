@@ -22,10 +22,10 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ var.AWS_REGION }}
+          aws-region: ${{ vars.AWS_REGION }}
 
       - name: Set AWS Profile
-        run: echo "AWS_PROFILE=my-custom-profile" >> $ ${{ var.AWS_PROFILE }}
+        run: echo "AWS_PROFILE=my-custom-profile" >> $ ${{ vars.AWS_PROFILE }}
 
       - name: Set up Packer
         uses: hashicorp/setup-packer@main
@@ -43,6 +43,6 @@ jobs:
           cd packer 
           packer build \
             -var-file='./variables.pkr.hcl' \
-            -var "AWS_REGION=${{ var.AWS_REGION }}" \
-            -var "AWS_PROFILE=${{ var.AWS_PROFILE }}" \
+            -var "AWS_REGION=${{ vars.AWS_REGION }}" \
+            -var "AWS_PROFILE=${{ vars.AWS_PROFILE }}" \
             ./custom-ami.pkr.hcl
