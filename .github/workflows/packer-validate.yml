@@ -29,7 +29,7 @@ jobs:
       - name: Run Packer fmt
         id: packer-fmt
         run: |
-          ls
+          cd packer
           if ! packer fmt -check=true ./custom-ami.pkr.hcl; then
             echo "Formatting check failed for custom-ami.pkr.hcl"
             exit 1
@@ -41,6 +41,7 @@ jobs:
 
       - name: Run Packer validate
         run: |
+          cd packer
           if ! packer validate -var-file=./variables.pkr.hcl ./custom-ami.pkr.hcl; then
             echo "Validation failed for custom-ami.pkr.hcl"
             exit 1
