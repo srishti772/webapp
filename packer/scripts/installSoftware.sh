@@ -138,5 +138,5 @@ sudo chmod -R 750  /opt/csye6225/webapp
 echo "========================================"
 echo "Showing updated permissions"
 echo "========================================"
-ls -la /opt/csye6225
+ls -la /opt/csye6225 | grep 'csye6225'
 
