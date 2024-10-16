@@ -21,7 +21,7 @@ jobs:
 
       - name: Echo AWS configuration (without sensitive data)
         run: |
-        echo "AWS Region: ${{ vars.AWS_REGION }}"
+          echo "AWS Region: ${{ vars.AWS_REGION }}"
 
       - name: Set up AWS CLI
         uses: aws-actions/configure-aws-credentials@v4
