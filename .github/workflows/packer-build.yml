@@ -1,14 +1,16 @@
 name: Packer Build
 
 on:
-  pull_request:
+  push:
     branches:
       - main
+      - A04
 
   workflow_dispatch: 
 jobs:
   packer-build:
     runs-on: ubuntu-latest
+    environment: test
 
     steps:
       - name: Checkout code
@@ -16,6 +18,10 @@ jobs:
 
       - name: Zip Web App
         run: zip -r webapp.zip .
+
+      - name: Echo AWS configuration (without sensitive data)
+        run: |
+        echo "AWS Region: ${{ vars.AWS_REGION }}"
 
       - name: Set up AWS CLI
         uses: aws-actions/configure-aws-credentials@v4
