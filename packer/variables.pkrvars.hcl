@@ -1,6 +1,15 @@
-aws_region    = "us-east-1"
-ami_name      = "webapp-ubuntu"
-instance_type = "t2.micro"
-source_ami    = "ami-0f2b11140e6f07bc2" 
-vpc_id        = "vpc-12345"             
-subnet_id     = "subnet-67890"          
+# Source AMI Filters
+AMI_SOURCE_DESCRIPTION      = "*Ubuntu*, *24.04*, *LTS*, *amd64*"
+AMI_SOURCE_ROOT_DEVICE_TYPE = "ebs"
+AMI_SOURCE_VIRTUALIZATION   = "hvm"
+SOURCE_AMI_OWNERS           = ["099720109477"]
+
+# AMI Variables
+AWS_REGION      = "us-east-1"
+AMI_NAME        = "Ubuntu-AMI-Webapp"
+INSTANCE_TYPE   = "t2.micro"
+AMI_DESCRIPTION = "Assignment 04 AMI"
+SSH_USER        = "ubuntu"
+VPC_IS_DEFAULT  = "true"
+AMI_USERS       = ["664418960750", "537124970289"]
+AWS_PROFILE     = "dev"
