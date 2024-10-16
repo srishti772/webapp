@@ -1,0 +1,35 @@
+name: Packer CI
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  packer-validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Packer
+        uses: hashicorp/setup-packer@main
+        with:
+          packer_version: ${{ vars.PACKER_VERSION }}
+
+      - name: Run Packer fmt
+        id: packer-fmt
+        run: |
+          packer fmt -check -list=./packer/*.pkr.hcl
+        continue-on-error: true
+
+      - name: Check for Packer fmt modifications
+        if: steps.packer-fmt.outcome == 'failure'
+        run: |
+          echo "modifications found by packer fmt command."
+          exit 1
+
+      - name: Run Packer validate
+        run: |
+          packer validate ./packer/custom-ami.pkr.hcl
