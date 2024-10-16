@@ -1,0 +1,19 @@
+[Unit]
+Description=webapp assignment 04
+After=network.target
+
+[Service]
+WorkingDirectory=/opt/csye6225/webapp
+EnvironmentFile=/opt/csye6225/webapp/.env
+Type=simple
+User=csye6225
+Group=csye6225 
+ExecStart=/usr/bin/node /opt/csye6225/webapp/server.js
+Restart=always
+RestartSec=3
+StandardOutput=syslog 
+StandardError=syslog 
+SyslogIdentifier=csye6225
+
+[Install]
+WantedBy=cloud-init.target
