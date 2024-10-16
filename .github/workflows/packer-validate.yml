@@ -14,7 +14,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Zip Web App
-        run: zip -r webapp.zip
+        run: zip -r webapp.zip .
 
       - name: Set up Packer
         uses: hashicorp/setup-packer@main
