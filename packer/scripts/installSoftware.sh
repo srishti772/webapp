@@ -68,7 +68,7 @@ FLUSH PRIVILEGES;
 EOF
 
 echo "========================================"
-echo "          Copying webapp.zip to ${DIR}"
+echo "Copying webapp.zip to ${DIR}"
 echo "========================================"
 sudo cp -r webapp.zip "${DIR}"
 
@@ -114,12 +114,29 @@ echo "          Verifying .env file contents:"
 echo "========================================"
 cat $ENV_FILE
 
+#echo "========================================"
+#echo "          Starting the application..."
+#echo "========================================"
+#sudo npm start
+
+
 echo "========================================"
-echo "          Starting the application..."
+echo " SystemD Setup"
 echo "========================================"
-sudo npm start
+cd ~
+sudo cp -r webapp.service "/etc/systemd/system/webapp.service"
+sudo systemctl daemon-reload
+sudo systemctl enable webapp.service
+
 
 echo "========================================"
 echo " Setting ownership for /opt/csye6225/webapp"
 echo "========================================"
 sudo chown -R csye6225:csye6225 "${DIR}/webapp"
+sudo chmod -R 750  /opt/csye6225/webapp
+
+echo "========================================"
+echo "Showing updated permissions"
+echo "========================================"
+ls -la /opt/csye6225
+
