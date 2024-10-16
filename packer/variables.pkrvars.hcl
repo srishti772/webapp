@@ -1,0 +1,6 @@
+aws_region    = "us-east-1"
+ami_name      = "webapp-ubuntu"
+instance_type = "t2.micro"
+source_ami    = "ami-0f2b11140e6f07bc2" 
+vpc_id        = "vpc-12345"             
+subnet_id     = "subnet-67890"          
