@@ -18,14 +18,11 @@ jobs:
         run: zip -r webapp.zip .
 
       - name: Set up AWS CLI
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ vars.AWS_REGION }}
-
-      - name: Set AWS Profile
-        run: echo "AWS_PROFILE=my-custom-profile" >> $ ${{ vars.AWS_PROFILE }}
 
       - name: Set up Packer
         uses: hashicorp/setup-packer@main
