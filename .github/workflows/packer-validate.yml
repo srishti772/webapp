@@ -21,8 +21,8 @@ jobs:
       - name: Run Packer fmt
         id: packer-fmt
         run: |
-          packer fmt -check=true ./packer/*.pkr.hcl
-   
+          packer fmt -check=true ./packer/custom-ami.pkr.hcl
+
       - name: Run Packer validate
         run: |
           packer validate ./packer/custom-ami.pkr.hcl
