@@ -10,7 +10,7 @@ packer {
 # Variables
 # SOURCE AMI FILTERS
 variable "AMI_SOURCE_DESCRIPTION" {
-  type    = string
+  type = string
 }
 
 variable "AMI_SOURCE_ROOT_DEVICE_TYPE" {
@@ -77,7 +77,7 @@ source "amazon-ebs" "custom-ami" {
   region        = "${var.AWS_REGION}"
 
   #Dev and Demo account ID with permission to use the AMI
-  ami_users  = "${var.AMI_USERS}"
+  ami_users = "${var.AMI_USERS}"
   source_ami_filter {
     filters = {
       description         = "${var.AMI_SOURCE_DESCRIPTION}"
@@ -123,7 +123,7 @@ build {
     output     = "manifest.json"
     strip_path = true
   }
- 
+
 
 
 }
