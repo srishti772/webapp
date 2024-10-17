@@ -9,7 +9,7 @@ jobs:
   packer-build:
     runs-on: ubuntu-latest
     environment: dev
-
+    if: github.repository == 'csye6225-cloud-srishti/webapp' 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
