@@ -50,10 +50,13 @@ jobs:
         run: |
           cd packer
           cat <<EOF > variables.pkr.hcl
-          MYSQL_USER = "${{ secrets.MYSQL_USER }}"
-          MYSQL_PASSWORD = "${{ secrets.MYSQL_PASSWORD }}"
-          MYSQL_HOST = "${{ vars.MYSQL_HOST }}"
-          MYSQL_PORT = "${{ vars.MYSQL_PORT }}"
+          MYSQL_CONFIG = {
+            user     = "${{ secrets.MYSQL_USER }}"
+            password = "${{ secrets.MYSQL_PASSWORD }}"
+            host     = "${{ vars.MYSQL_HOST }}"
+            port     = "${{ vars.MYSQL_PORT }}"
+          }
+          
           APP_PORT = "${{ vars.APP_PORT }}"
 
           AMI_SOURCE_DESCRIPTION = "${{ vars.AMI_SOURCE_DESCRIPTION }}"
