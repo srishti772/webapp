@@ -76,9 +76,10 @@ jobs:
       - name: Build Image
         id: build
         run: |
-           packer build \
-            -var-file='./variables.pkr.hcl' \
-            ./packer/custom-ami.pkr.hcl
+          cd packer
+          packer build \
+          -var-file='./variables.pkr.hcl' \
+          ./custom-ami.pkr.hcl
 
       - name: List files
         run: |
