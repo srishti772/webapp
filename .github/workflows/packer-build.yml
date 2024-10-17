@@ -46,31 +46,31 @@ jobs:
           cd packer 
           packer init ./custom-ami.pkr.hcl
 
-      - name: Create  variables.pkr.hcl file
+      - name: Create variables.pkr.hcl file
         run: |
           cd packer
-          touch variables.pkr.hcl
-          echo MYSQL_USER: ${{  secrets.MYSQL_USER }} >> variables.pkr.hcl
-          echo MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }} >> variables.pkr.hcl
-          echo MYSQL_HOST: ${{ vars.MYSQL_HOST }} >> variables.pkr.hcl
-          echo MYSQL_PORT: ${{ vars.MYSQL_PORT }} >> variables.pkr.hcl
-          echo APP_PORT=${{ vars.APP_PORT }} >> variables.pkr.hcl
+          cat <<EOF > variables.pkr.hcl
+          MYSQL_USER = "${{ secrets.MYSQL_USER }}"
+          MYSQL_PASSWORD = "${{ secrets.MYSQL_PASSWORD }}"
+          MYSQL_HOST = "${{ vars.MYSQL_HOST }}"
+          MYSQL_PORT = "${{ vars.MYSQL_PORT }}"
+          APP_PORT = "${{ vars.APP_PORT }}"
 
-          echo AMI_SOURCE_DESCRIPTION=${{ vars.AMI_SOURCE_DESCRIPTION }} >> variables.pkr.hcl
-          echo AMI_SOURCE_ROOT_DEVICE_TYPE=${{ vars.AMI_SOURCE_ROOT_DEVICE_TYPE }} >>  variables.pkr.hcl
-          echo AMI_SOURCE_VIRTUALIZATION=${{ vars.AMI_SOURCE_VIRTUALIZATION }} >>  variables.pkr.hcl
-          echo SOURCE_AMI_OWNERS=${{ vars.SOURCE_AMI_OWNERS }} >>  variables.pkr.hcl
+          AMI_SOURCE_DESCRIPTION = "${{ vars.AMI_SOURCE_DESCRIPTION }}"
+          AMI_SOURCE_ROOT_DEVICE_TYPE = "${{ vars.AMI_SOURCE_ROOT_DEVICE_TYPE }}"
+          AMI_SOURCE_VIRTUALIZATION = "${{ vars.AMI_SOURCE_VIRTUALIZATION }}"
+          SOURCE_AMI_OWNERS = ["${{ vars.SOURCE_AMI_OWNERS }}"]
 
-          echo AMI_REGION=${{ vars.AWS_REGION }} >>  variables.pkr.hcl
-          echo AMI_NAME=${{ vars.AMI_NAME }} >>  variables.pkr.hcl
-          echo INSTANCE_TYPE=${{ vars.INSTANCE_TYPE }} >>  variables.pkr.hcl
-          echo AMI_DESCRIPTION=${{ vars.AMI_DESCRIPTION }} >>  variables.pkr.hcl
-          echo SSH_USER=${{ vars.SSH_USER }} >>  variables.pkr.hcl
-          echo VPC_IS_DEFAULT=${{ vars.VPC_IS_DEFAULT }} >>  variables.pkr.hcl
-          echo AMI_USERS=${{ vars.AMI_USERS }} >>  variables.pkr.hcl
-          echo AWS_PROFILE=${{ vars.AWS_PROFILE }} >>  variables.pkr.hcl
+          AMI_REGION = "${{ vars.AWS_REGION }}"
+          AMI_NAME = "${{ vars.AMI_NAME }}"
+          INSTANCE_TYPE = "${{ vars.INSTANCE_TYPE }}"
+          AMI_DESCRIPTION = "${{ vars.AMI_DESCRIPTION }}"
+          SSH_USER = "${{ vars.SSH_USER }}"
+          VPC_IS_DEFAULT = "${{ vars.VPC_IS_DEFAULT }}"
+          AMI_USERS = ["${{ vars.AMI_USERS }}"]
+          AWS_PROFILE = "${{ vars.AWS_PROFILE }}"
+          EOF
 
-          
       - name: Format variables.pkr.hcl File
         run: |
           cd packer
