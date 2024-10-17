@@ -70,12 +70,14 @@ jobs:
           AMI_USERS = ["${{ vars.AMI_USERS }}"]
           AWS_PROFILE = "${{ vars.AWS_PROFILE }}"
           EOF
+          echo "Contents of variables.pkr.hcl file:"
+          cat variables.pkr.hcl
 
       - name: Format variables.pkr.hcl File
         run: |
           cd packer
           packer fmt variables.pkr.hcl
-          echo "Contents of .env file:"
+          echo "Contents of variables.pkr.hcl file:"
           cat variables.pkr.hcl
 
       - name: Build Image
