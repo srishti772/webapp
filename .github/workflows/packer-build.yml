@@ -46,14 +46,14 @@ jobs:
           cd packer 
           packer init ./custom-ami.pkr.hcl
 
-      - name: Create .env file
+      - name: Create  variables.pkr.hcl file
         run: |
           cd packer
           touch variables.pkr.hcl
-          MYSQL_USER: ${{  secrets.MYSQL_USER }} >> variables.pkr.hcl
-          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }} >> variables.pkr.hcl
-          MYSQL_HOST: ${{ vars.MYSQL_HOST }} >> variables.pkr.hcl
-          MYSQL_PORT: ${{ vars.MYSQL_PORT }} >> variables.pkr.hcl
+          echo MYSQL_USER: ${{  secrets.MYSQL_USER }} >> variables.pkr.hcl
+          echo MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }} >> variables.pkr.hcl
+          echo MYSQL_HOST: ${{ vars.MYSQL_HOST }} >> variables.pkr.hcl
+          echo MYSQL_PORT: ${{ vars.MYSQL_PORT }} >> variables.pkr.hcl
           echo APP_PORT=${{ vars.APP_PORT }} >> variables.pkr.hcl
 
           echo AMI_SOURCE_DESCRIPTION=${{ vars.AMI_SOURCE_DESCRIPTION }} >> variables.pkr.hcl
