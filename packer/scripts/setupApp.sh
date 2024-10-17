@@ -6,6 +6,13 @@ DIR="/opt/csye6225"
 MYSQL_DATABASE_TEST="test_db"
 MYSQL_DATABASE_PROD="prod_db"
 
+
+NEW_USER=${NEW_USER}
+NEW_PASSWORD=${NEW_PASSWORD}
+MYSQL_HOST=${MYSQL_HOST}
+MYSQL_PORT=${MYSQL_PORT}
+APP_PORT=${PORT}
+
 echo "========================================"
 echo "          Creating usergroup csye6225"
 echo "========================================"
