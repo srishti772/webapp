@@ -61,7 +61,7 @@ variable "VPC_IS_DEFAULT" {
 
 variable "AMI_USERS" {
   type    = list(string)
-  default = ["664418960750", "537124970289"]
+  default = ["664418960750"]
 }
 
 variable "AWS_PROFILE" {
@@ -75,7 +75,7 @@ variable "AWS_PROFILE" {
 source "amazon-ebs" "custom-ami" {
   profile         = "${var.AWS_PROFILE}"
   ami_name        = "${var.AMI_NAME}_${formatdate("YYYY-MM-DD-hh.mm.ss", timestamp())}"
-  ami_description = "${var.AMI_DESCRIPTION}"
+  ami_description = "{{ .SourceAMI }}_{{ .SourceAMIName }}"
   instance_type   = "${var.INSTANCE_TYPE}"
   region          = "${var.AWS_REGION}"
 

@@ -6,7 +6,7 @@ on:
       - main
       - A04
 
-  workflow_dispatch: 
+  workflow_dispatch:
 jobs:
   packer-build:
     runs-on: ubuntu-latest
@@ -15,6 +15,17 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run Unit Tests
+        run: npm run test:unit
 
       - name: Zip Web App
         run: zip -r webapp.zip .
@@ -45,9 +56,11 @@ jobs:
             -var "AWS_REGION=${{ vars.AWS_REGION }}" \
             -var "AWS_PROFILE=${{ vars.AWS_PROFILE }}" \
             ./custom-ami.pkr.hcl
-      
+
       - name: List files
-        run: ls -la      
+        run: |
+          ls -la
+          find . -name "manifest.json"
 
       - name: Upload Manifest
         uses: actions/upload-artifact@v4
