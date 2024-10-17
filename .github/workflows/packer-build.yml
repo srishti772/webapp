@@ -1,0 +1,97 @@
+name: Packer Build
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  packer-build:
+    runs-on: ubuntu-latest
+    environment: dev
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Zip Web App
+        run: zip -r webapp.zip .
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run Unit Tests
+        run: npm run test:unit
+
+      - name: Set up AWS CLI
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Set up Packer
+        uses: hashicorp/setup-packer@main
+        with:
+          version: ${{ vars.PACKER_VERSION }}
+
+      - name: Run Packer init
+        run: |
+          cd packer 
+          packer init ./custom-ami.pkr.hcl
+
+      - name: Create variables.pkr.hcl file
+        run: |
+          cd packer
+          cat <<EOF > variables.pkr.hcl
+          MYSQL_CONFIG = {
+            user     = "${{ secrets.MYSQL_USER }}"
+            password = "${{ secrets.MYSQL_PASSWORD }}"
+            host     = "${{ vars.MYSQL_HOST }}"
+            port     = "${{ vars.MYSQL_PORT }}"
+          }
+
+          APP_PORT = "${{ vars.APP_PORT }}"
+
+          AMI_SOURCE_DESCRIPTION = "${{ vars.AMI_SOURCE_DESCRIPTION }}"
+          AMI_SOURCE_ROOT_DEVICE_TYPE = "${{ vars.AMI_SOURCE_ROOT_DEVICE_TYPE }}"
+          AMI_SOURCE_VIRTUALIZATION = "${{ vars.AMI_SOURCE_VIRTUALIZATION }}"
+          SOURCE_AMI_OWNERS = ["${{ vars.SOURCE_AMI_OWNERS }}"]
+
+          AMI_REGION = "${{ vars.AWS_REGION }}"
+          AMI_NAME = "${{ vars.AMI_NAME }}"
+          INSTANCE_TYPE = "${{ vars.INSTANCE_TYPE }}"
+          AMI_DESCRIPTION = "${{ vars.AMI_DESCRIPTION }}"
+          SSH_USER = "${{ vars.SSH_USER }}"
+          VPC_IS_DEFAULT = "${{ vars.VPC_IS_DEFAULT }}"
+          AMI_USERS = ["${{ vars.AMI_USERS }}"]
+          AWS_PROFILE = "${{ vars.AWS_PROFILE }}"
+          EOF
+          echo "Contents of variables.pkr.hcl file:"
+          cat variables.pkr.hcl
+
+      - name: Format variables.pkr.hcl File
+        run: |
+          cd packer
+          packer fmt variables.pkr.hcl
+          echo "Contents of variables.pkr.hcl file:"
+          cat variables.pkr.hcl
+
+      - name: Build Image
+        id: build
+        run: |
+          cd packer
+          packer build \
+          -var-file='./variables.pkr.hcl' \
+          ./custom-ami.pkr.hcl
+
+      - name: Upload Manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: packer-manifest
+          path: ./packer/manifest.json
