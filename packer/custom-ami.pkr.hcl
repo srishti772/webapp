@@ -30,7 +30,7 @@ variable "SOURCE_AMI_OWNERS" {
 }
 
 # AMI VARIABLES
-variable "AWS_REGION" {
+variable "AMI_REGION" {
   type    = string
   default = "us-east-1"
 }
@@ -71,6 +71,21 @@ variable "AWS_PROFILE" {
 }
 
 
+#MYSQL
+variable "MYSQL_CONFIG" {
+  type = map(string)
+  default = {
+    user     = "root"
+    password = "root"
+    host     = "127.0.0.1"
+    port     = "3306"
+  }
+}
+
+variable "APP_PORT" {
+  type    = number
+  default = 3000
+}
 
 # AMI
 source "amazon-ebs" "custom-ami" {
@@ -78,7 +93,7 @@ source "amazon-ebs" "custom-ami" {
   ami_name        = "${var.AMI_NAME}_${formatdate("YYYY-MM-DD-hh.mm.ss", timestamp())}"
   ami_description = "{{ .SourceAMI }}_{{ .SourceAMIName }}"
   instance_type   = "${var.INSTANCE_TYPE}"
-  region          = "${var.AWS_REGION}"
+  region          = "${var.AMI_REGION}"
 
   #Dev and Demo account ID with permission to use the AMI
   ami_users = "${var.AMI_USERS}"
@@ -118,6 +133,14 @@ build {
     destination = "~/webapp.service"
   }
   provisioner "shell" {
+    environment_vars = [
+      "NEW_USER=${var.MYSQL_CONFIG["user"]}",
+      "NEW_PASSWORD=${var.MYSQL_CONFIG["password"]}",
+      "MYSQL_HOST=${var.MYSQL_CONFIG["host"]}",
+      "MYSQL_PORT=${var.MYSQL_CONFIG["port"]}",
+      "PORT=${var.APP_PORT}"
+    ]
+
     scripts = [
       "scripts/updateSystem.sh",
       "scripts/installSoftware.sh",

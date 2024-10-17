@@ -1,12 +1,5 @@
 
 
-
-# Variables
-ROOT_PASSWORD="testPassword!"  
-NEW_USER="srishti772"
-NEW_PASSWORD="testPassword!"
-DATABASE1="test_db"
-DATABASE2="prod_db"
 ENV_FILE="./.env"
 DIR="/opt/csye6225"
 
@@ -14,8 +7,11 @@ DIR="/opt/csye6225"
 PORT=3000
 MYSQL_HOST=127.0.0.1
 MYSQL_PORT=3306
-MYSQL_DATABASE_TEST="test_db"
-MYSQL_DATABASE_PROD="prod_db"
+ROOT_PASSWORD="testPassword!"  
+NEW_USER="srishti772"
+NEW_PASSWORD="testPassword!"
+DATABASE1="test_db"
+DATABASE2="prod_db"
 
 echo "========================================"
 echo "          Creating usergroup csye6225"

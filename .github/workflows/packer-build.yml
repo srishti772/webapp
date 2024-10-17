@@ -6,7 +6,6 @@ on:
       - main
       - A04
 
-  workflow_dispatch:
 jobs:
   packer-build:
     runs-on: ubuntu-latest
@@ -15,6 +14,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Zip Web App
+        run: zip -r webapp.zip .
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -26,9 +28,6 @@ jobs:
 
       - name: Run Unit Tests
         run: npm run test:unit
-
-      - name: Zip Web App
-        run: zip -r webapp.zip .
 
       - name: Set up AWS CLI
         uses: aws-actions/configure-aws-credentials@v4
@@ -47,14 +46,38 @@ jobs:
           cd packer 
           packer init ./custom-ami.pkr.hcl
 
+      - name: Create .env file
+        run: |
+          cd packer
+          touch variables.pkr.hcl
+          MYSQL_USER: ${{  secrets.MYSQL_USER }} >> variables.pkr.hcl
+          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }} >> variables.pkr.hcl
+          MYSQL_HOST: ${{ vars.MYSQL_HOST }} >> variables.pkr.hcl
+          MYSQL_PORT: ${{ vars.MYSQL_PORT }} >> variables.pkr.hcl
+          echo APP_PORT=${{ vars.APP_PORT }} >> variables.pkr.hcl
+
+          echo AMI_SOURCE_DESCRIPTION=${{ vars.AMI_SOURCE_DESCRIPTION }} >> variables.pkr.hcl
+          echo AMI_SOURCE_ROOT_DEVICE_TYPE=${{ vars.AMI_SOURCE_ROOT_DEVICE_TYPE }} >>  variables.pkr.hcl
+          echo AMI_SOURCE_VIRTUALIZATION=${{ vars.AMI_SOURCE_VIRTUALIZATION }} >>  variables.pkr.hcl
+          echo SOURCE_AMI_OWNERS=${{ vars.SOURCE_AMI_OWNERS }} >>  variables.pkr.hcl
+
+          echo AMI_REGION=${{ vars.AWS_REGION }} >>  variables.pkr.hcl
+          echo AMI_NAME=${{ vars.AMI_NAME }} >>  variables.pkr.hcl
+          echo INSTANCE_TYPE=${{ vars.INSTANCE_TYPE }} >>  variables.pkr.hcl
+          echo AMI_DESCRIPTION=${{ vars.AMI_DESCRIPTION }} >>  variables.pkr.hcl
+          echo SSH_USER=${{ vars.SSH_USER }} >>  variables.pkr.hcl
+          echo VPC_IS_DEFAULT=${{ vars.VPC_IS_DEFAULT }} >>  variables.pkr.hcl
+          echo AMI_USERS=${{ vars.AMI_USERS }} >>  variables.pkr.hcl
+          echo AWS_PROFILE=${{ vars.AWS_PROFILE }} >>  variables.pkr.hcl
+
+          echo "Contents of .env file:"
+          cat variables.pkr.hcl
+
       - name: Build Image
         id: build
         run: |
-          cd packer 
-          packer build \
+           packer build \
             -var-file='./variables.pkr.hcl' \
-            -var "AWS_REGION=${{ vars.AWS_REGION }}" \
-            -var "AWS_PROFILE=${{ vars.AWS_PROFILE }}" \
             ./custom-ami.pkr.hcl
 
       - name: List files
