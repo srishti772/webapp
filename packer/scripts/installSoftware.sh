@@ -1,13 +1,8 @@
 set -e
 export DEBIAN_FRONTEND="noninteractive"
 
-# Environment Variables
-PORT=3000
-MYSQL_HOST=127.0.0.1
-MYSQL_PORT=3306
+
 ROOT_PASSWORD="testPassword!"  
-NEW_USER="srishti772"
-NEW_PASSWORD="testPassword!"
 MYSQL_DATABASE_TEST="test_db"
 MYSQL_DATABASE_PROD="prod_db"
 
