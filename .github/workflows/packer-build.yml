@@ -4,12 +4,11 @@ on:
   push:
     branches:
       - main
-      - A04
 
 jobs:
   packer-build:
     runs-on: ubuntu-latest
-    environment: test
+    environment: dev
 
     steps:
       - name: Checkout code
@@ -56,7 +55,7 @@ jobs:
             host     = "${{ vars.MYSQL_HOST }}"
             port     = "${{ vars.MYSQL_PORT }}"
           }
-          
+
           APP_PORT = "${{ vars.APP_PORT }}"
 
           AMI_SOURCE_DESCRIPTION = "${{ vars.AMI_SOURCE_DESCRIPTION }}"
@@ -96,4 +95,3 @@ jobs:
         with:
           name: packer-manifest
           path: ./packer/manifest.json
-
