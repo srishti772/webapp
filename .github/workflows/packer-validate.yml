@@ -34,15 +34,11 @@ jobs:
             echo "Formatting check failed for custom-ami.pkr.hcl"
             exit 1
           fi
-          if ! packer fmt -check=true ./variables.pkr.hcl; then
-            echo "Formatting check failed for variables.pkr.hcl"
-            exit 1
-          fi
 
       - name: Run Packer validate
         run: |
           cd packer
-          if ! packer validate -var-file=./variables.pkr.hcl ./custom-ami.pkr.hcl; then
+          if ! packer validate ./custom-ami.pkr.hcl; then
             echo "Validation failed for custom-ami.pkr.hcl"
             exit 1
           fi

@@ -11,6 +11,7 @@ packer {
 # SOURCE AMI FILTERS
 variable "AMI_SOURCE_DESCRIPTION" {
   type = string
+   default = "*Ubuntu*24.04*"
 }
 
 variable "AMI_SOURCE_ROOT_DEVICE_TYPE" {
