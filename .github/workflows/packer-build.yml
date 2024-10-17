@@ -78,7 +78,7 @@ jobs:
         run: |
            packer build \
             -var-file='./variables.pkr.hcl' \
-            ./custom-ami.pkr.hcl
+            ./packer/custom-ami.pkr.hcl
 
       - name: List files
         run: |
