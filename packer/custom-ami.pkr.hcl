@@ -71,22 +71,6 @@ variable "AWS_PROFILE" {
 }
 
 
-#MYSQL
-variable "MYSQL_CONFIG" {
-  type = map(string)
-  default = {
-    user     = "root"
-    password = "root"
-    host     = "127.0.0.1"
-    port     = "3306"
-  }
-}
-
-variable "APP_PORT" {
-  type    = number
-  default = 3000
-}
-
 # AMI
 source "amazon-ebs" "custom-ami" {
   profile         = "${var.AWS_PROFILE}"
@@ -99,7 +83,7 @@ source "amazon-ebs" "custom-ami" {
   ami_users = "${var.AMI_USERS}"
   source_ami_filter {
     filters = {
-      description         = "${var.AMI_SOURCE_DESCRIPTION}"
+      name                = "${var.AMI_SOURCE_DESCRIPTION}"
       root-device-type    = "${var.AMI_SOURCE_ROOT_DEVICE_TYPE}"
       virtualization-type = "${var.AMI_SOURCE_VIRTUALIZATION}"
     }
@@ -133,13 +117,6 @@ build {
     destination = "~/webapp.service"
   }
   provisioner "shell" {
-    environment_vars = [
-      "NEW_USER=${var.MYSQL_CONFIG["user"]}",
-      "NEW_PASSWORD=${var.MYSQL_CONFIG["password"]}",
-      "MYSQL_HOST=${var.MYSQL_CONFIG["host"]}",
-      "MYSQL_PORT=${var.MYSQL_CONFIG["port"]}",
-      "PORT=${var.APP_PORT}"
-    ]
 
     scripts = [
       "scripts/updateSystem.sh",

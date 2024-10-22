@@ -2,14 +2,14 @@ set -e
 export DEBIAN_FRONTEND="noninteractive"
 
 
-ROOT_PASSWORD="testPassword!"  
-MYSQL_DATABASE_TEST="test_db"
-MYSQL_DATABASE_PROD="prod_db"
-NEW_USER=${NEW_USER}
-NEW_PASSWORD=${NEW_PASSWORD}
-MYSQL_HOST=${MYSQL_HOST}
-MYSQL_PORT=${MYSQL_PORT}
-APP_PORT=${PORT}
+#ROOT_PASSWORD="testPassword!"  
+#MYSQL_DATABASE_TEST="test_db"
+#MYSQL_DATABASE_PROD="prod_db"
+#NEW_USER=${NEW_USER}
+#NEW_PASSWORD=${NEW_PASSWORD}
+#MYSQL_HOST=${MYSQL_HOST}
+#MYSQL_PORT=${MYSQL_PORT}
+#APP_PORT=${PORT}
 
 # Echo the values of environment variables
 echo "========================================"
@@ -39,6 +39,8 @@ sudo bash /tmp/nodesource_setup.sh
 sudo apt install nodejs -y
 node -v
 npm -v
+
+: <<'END_COMMENT'
 
 # Install MySQL
 echo "========================================"
@@ -70,3 +72,4 @@ echo "========================================"
 sudo apt remove -y git
 
 
+END_COMMENT
