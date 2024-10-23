@@ -1,17 +1,5 @@
-
-
-ENV_FILE="./.env"
 DIR="/opt/csye6225"
 
-MYSQL_DATABASE_TEST="test_db"
-MYSQL_DATABASE_PROD="prod_db"
-
-
-NEW_USER=${NEW_USER}
-NEW_PASSWORD=${NEW_PASSWORD}
-MYSQL_HOST=${MYSQL_HOST}
-MYSQL_PORT=${MYSQL_PORT}
-APP_PORT=${PORT}
 
 echo "========================================"
 echo "          Creating usergroup csye6225"
@@ -60,28 +48,6 @@ echo "Installing npm dependencies..."
 echo "========================================"
 npm install --no-audit --no-fund
 
-# Create .env file with environment variables
-echo "========================================"
-echo "Creating .env file with environment variables"
-echo "========================================"
-echo "Creating .env file at: $ENV_FILE"
-touch "$ENV_FILE"  # Create the .env file
-
-# Populate the .env file with the required environment variables
-cat <<EOL > "$ENV_FILE"
-PORT=${PORT}
-MYSQL_USER=${NEW_USER}
-MYSQL_PASSWORD=${NEW_PASSWORD}
-MYSQL_HOST=${MYSQL_HOST}
-MYSQL_PORT=${MYSQL_PORT}
-MYSQL_DATABASE_TEST=$MYSQL_DATABASE_TEST
-MYSQL_DATABASE_PROD=$MYSQL_DATABASE_PROD
-EOL
-
-echo "========================================"
-echo "Verifying .env file contents:"
-echo "========================================"
-cat "$ENV_FILE"
 
 EOF
 

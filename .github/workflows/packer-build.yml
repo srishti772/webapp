@@ -9,7 +9,7 @@ jobs:
   packer-build:
     runs-on: ubuntu-latest
     environment: dev
-    if: github.repository == 'csye6225-cloud-srishti/webapp' 
+    if: github.repository == 'csye6225-cloud-srishti/webapp'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -49,15 +49,6 @@ jobs:
         run: |
           cd packer
           cat <<EOF > variables.pkr.hcl
-          MYSQL_CONFIG = {
-            user     = "${{ secrets.MYSQL_USER }}"
-            password = "${{ secrets.MYSQL_PASSWORD }}"
-            host     = "${{ vars.MYSQL_HOST }}"
-            port     = "${{ vars.MYSQL_PORT }}"
-          }
-
-          APP_PORT = "${{ vars.APP_PORT }}"
-
           AMI_SOURCE_DESCRIPTION = "${{ vars.AMI_SOURCE_DESCRIPTION }}"
           AMI_SOURCE_ROOT_DEVICE_TYPE = "${{ vars.AMI_SOURCE_ROOT_DEVICE_TYPE }}"
           AMI_SOURCE_VIRTUALIZATION = "${{ vars.AMI_SOURCE_VIRTUALIZATION }}"
