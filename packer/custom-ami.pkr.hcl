@@ -9,9 +9,9 @@ packer {
 
 # Variables
 # SOURCE AMI FILTERS
-variable "AMI_SOURCE_DESCRIPTION" {
+variable "AMI_SOURCE_NAME" {
   type    = string
-  default = "*Ubuntu*24.04*"
+  default = "ubuntu-pro-server/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-pro-server-20241011"
 }
 
 variable "AMI_SOURCE_ROOT_DEVICE_TYPE" {
@@ -83,7 +83,7 @@ source "amazon-ebs" "custom-ami" {
   ami_users = "${var.AMI_USERS}"
   source_ami_filter {
     filters = {
-      name                = "${var.AMI_SOURCE_DESCRIPTION}"
+      name                = "${var.AMI_SOURCE_NAME}"
       root-device-type    = "${var.AMI_SOURCE_ROOT_DEVICE_TYPE}"
       virtualization-type = "${var.AMI_SOURCE_VIRTUALIZATION}"
     }
