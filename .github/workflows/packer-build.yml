@@ -49,7 +49,7 @@ jobs:
         run: |
           cd packer
           cat <<EOF > variables.pkr.hcl
-          AMI_SOURCE_DESCRIPTION = "${{ vars.AMI_SOURCE_DESCRIPTION }}"
+          AMI_SOURCE_NAME = "${{ vars.AMI_SOURCE_NAME }}"
           AMI_SOURCE_ROOT_DEVICE_TYPE = "${{ vars.AMI_SOURCE_ROOT_DEVICE_TYPE }}"
           AMI_SOURCE_VIRTUALIZATION = "${{ vars.AMI_SOURCE_VIRTUALIZATION }}"
           SOURCE_AMI_OWNERS = ["${{ vars.SOURCE_AMI_OWNERS }}"]
