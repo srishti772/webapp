@@ -1,7 +1,6 @@
 [Unit]
 Description=webapp assignment 04
 After=network.target
-ConditionPathExists=/opt/csye6225/webapp/.env
 
 [Service]
 WorkingDirectory=/opt/csye6225/webapp
