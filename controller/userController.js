@@ -1,4 +1,5 @@
-const logger = require("../config/winston");
+const logData = require("../config/logger/loggerUtil");
+const logger = require("../config/logger/winston");
 const userService = require("../service/userService");
 
 const validateUserFields = (userData, requiredfields, next, allowedField) => {
@@ -81,12 +82,9 @@ const createUser = (req, res, next) => {
   userService
     .createUser(userData)
     .then((response) => {
-      logger.info("User created successfully", {
-        requestMethod: req.method,
-        originalUrl: req.originalUrl,
-        isAuthenticated: !!req.authenticatedUser || false,
-        data: response,
-      });      
+   
+      logData(req.method, req.originalUrl,  req.get('user-agent'), 'info', req.body, 200, 'User created successfully', response);
+
       return res.status(201).json({ message: "User Created", data: response });
     })
     .catch((err) => {
@@ -105,12 +103,9 @@ const getAUser = (req, res, next) => {
   userService
     .getAUser(email)
     .then((user) => {
-      logger.info("User fetched successfully", {
-        requestMethod: req.method,
-        originalUrl: req.originalUrl,
-        isAuthenticated: !!req.authenticatedUser || false,
-        data: user,
-      });      
+
+      logData(req.method, req.originalUrl,  req.get('user-agent'), 'info', req.body, 200, 'User fetched successfully', user);
+
       return res.status(200).json(user);
     })
     .catch((err) => {
@@ -127,12 +122,9 @@ const updateUser = (req, res, next) => {
   userService
     .updateUser(userId, userData)
     .then((updatedUser) => {
-      logger.info("User updated successfully", {
-        requestMethod: req.method,
-        originalUrl: req.originalUrl,
-        isAuthenticated: !!req.authenticatedUser || false,
-        data: updatedUser,
-      });      
+  
+      logData(req.method, req.originalUrl, req.get('user-agent'), 'info', req.body, 200,'User updated successfully', updatedUser);
+
       return res.status(204).end();
     })
     .catch((err) => {

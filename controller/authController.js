@@ -1,4 +1,5 @@
-const logger = require("../config/winston");
+const logData = require("../config/logger/loggerUtil");
+const logger = require("../config/logger/winston");
 const authService = require("../service/authService");
 const { validateUserFields } = require("./userController");
 
@@ -18,12 +19,8 @@ const login = (req, res, next) => {
     .login(userData.email, userData.password)
     .then((token) => {
       res.set("Authorization", `Basic ${token}`);
-      logger.info("User logged in successfully", {
-        requestMethod: req.method,
-        originalUrl: req.originalUrl,
-        isAuthenticated: !!req.authenticatedUser || false,
-        data: userData.email,
-      });
+      logData(req.method, req.originalUrl, req.get('user-agent'), 'info', req.body, 200, 'User logged in successfully', token);
+
       return res.status(200).end();
     })
     .catch((err) => {

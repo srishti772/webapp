@@ -15,10 +15,7 @@ const logger = winston.createLogger({
     new winston.transports.File({
       filename: 'combined.log'
     }),
-    new winston.transports.File({
-      filename: 'api-error.log',
-      level: 'error',
-    })
+
   ],
 });
 

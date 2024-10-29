@@ -1,6 +1,7 @@
 const express = require("express");
 const { checkDbConnection } = require("../config/dbConnection");
-const logger = require("../config/winston");
+const logger = require("../config/logger/winston");
+const logData = require("../config/logger/loggerUtil");
 const router = express.Router();
 
 router.get("/", async (req, res, next) => {
@@ -25,11 +26,9 @@ router.get("/", async (req, res, next) => {
   }
 
   console.log("Service health check successful.");
-  logger.info("Service is healthy", {
-    requestMethod: req.method,
-    originalUrl: req.originalUrl,
-    isAuthenticated: !!req.authenticatedUser || false,
-  });   
+
+  logData(req.method, req.originalUrl,  req.get('user-agent'), 'info', req.body, 200, 'Service is healthy', null);
+
   return res.status(200).end();
 });
 

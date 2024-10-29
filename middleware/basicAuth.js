@@ -1,4 +1,4 @@
-const logger = require("../config/winston");
+const logger = require("../config/logger/winston");
 const authService = require("../service/authService");
 
 const basicAuth = async (req, res, next) => {
@@ -14,7 +14,7 @@ const basicAuth = async (req, res, next) => {
   try {
     const user = await authService.authorize(authorization_header);
 
-        req.authenticatedUser = user.email;
+    req.authenticatedUser = user.email;
 
     next();
   } catch (err) {
