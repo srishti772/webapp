@@ -1,13 +1,16 @@
 const express = require("express");
-const {checkDbConnection} = require("../config/dbConnection");
+const { checkDbConnection } = require("../config/dbConnection");
+const logger = require("../config/winston");
 const router = express.Router();
 
 router.get("/", async (req, res, next) => {
-  if ((req.body && Object.keys(req.body).length > 0) ||  req._parsedUrl.search!=null)
-    {
+  if (
+    (req.body && Object.keys(req.body).length > 0) ||
+    req._parsedUrl.search != null
+  ) {
     const apiError = new Error("Request body and params should be empty.");
-    apiError.statusCode = 400; 
-    return next(apiError); 
+    apiError.statusCode = 400;
+    return next(apiError);
   }
 
   // Check database connection
@@ -17,11 +20,16 @@ router.get("/", async (req, res, next) => {
   } catch (error) {
     console.error(error);
     const dbError = new Error(error.body);
-    dbError.statusCode = 503; 
-    return next(dbError); 
+    dbError.statusCode = 503;
+    return next(dbError);
   }
 
   console.log("Service health check successful.");
+  logger.info("Service is healthy", {
+    requestMethod: req.method,
+    originalUrl: req.originalUrl,
+    isAuthenticated: !!req.authenticatedUser || false,
+  });   
   return res.status(200).end();
 });
 

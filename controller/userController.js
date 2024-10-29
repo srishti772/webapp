@@ -1,3 +1,4 @@
+const logger = require("../config/winston");
 const userService = require("../service/userService");
 
 const validateUserFields = (userData, requiredfields, next, allowedField) => {
@@ -80,6 +81,12 @@ const createUser = (req, res, next) => {
   userService
     .createUser(userData)
     .then((response) => {
+      logger.info("User created successfully", {
+        requestMethod: req.method,
+        originalUrl: req.originalUrl,
+        isAuthenticated: !!req.authenticatedUser || false,
+        data: response,
+      });      
       return res.status(201).json({ message: "User Created", data: response });
     })
     .catch((err) => {
@@ -98,6 +105,12 @@ const getAUser = (req, res, next) => {
   userService
     .getAUser(email)
     .then((user) => {
+      logger.info("User fetched successfully", {
+        requestMethod: req.method,
+        originalUrl: req.originalUrl,
+        isAuthenticated: !!req.authenticatedUser || false,
+        data: user,
+      });      
       return res.status(200).json(user);
     })
     .catch((err) => {
@@ -114,6 +127,12 @@ const updateUser = (req, res, next) => {
   userService
     .updateUser(userId, userData)
     .then((updatedUser) => {
+      logger.info("User updated successfully", {
+        requestMethod: req.method,
+        originalUrl: req.originalUrl,
+        isAuthenticated: !!req.authenticatedUser || false,
+        data: updatedUser,
+      });      
       return res.status(204).end();
     })
     .catch((err) => {
