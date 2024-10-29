@@ -6,12 +6,13 @@ const authRoutes = require("./routes/auth");
 const errorHandler = require("./middleware/errorHandler");
 const allowedMethods = require("./middleware/allowedMethods");
 const setHeaders = require("./middleware/setHeaders");
+const statsDMiddleware = require("./middleware/metrics");
 
 const app = express();
 
 app.use(setHeaders);
 app.use(express.json());
-
+app.use(statsDMiddleware);
 app.use(/^\/healthz$/, allowedMethods("GET"), healthCheck);
 app.use("/v2/user", allowedMethods("GET", "PUT", "POST"), userRoutes);
 app.use("/authenticated", allowedMethods("POST"), authRoutes);
