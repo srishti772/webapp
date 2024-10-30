@@ -1,6 +1,6 @@
 const userModel = require("../model/userModel");
 const bcrypt = require("bcrypt");
-const { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
+const { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand, HeadObjectCommand } = require('@aws-sdk/client-s3');
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const s3Client = require( "../config/s3Client");
 
@@ -185,6 +185,19 @@ const deleteProfilePic = async (userEmail) => {
       apiError.statusCode = 404;
       throw apiError;
     }
+    /** Check oownership
+    const headCommand = new HeadObjectCommand({
+      Bucket: process.env.BUCKET_NAME,
+      Key: `${existingUser.id}/${profilePic.file_name}`,
+    });
+
+    const headResponse = await s3Client.send(headCommand);
+
+    if (headResponse.Metadata.user_id !== existingUser.id.toString()) {
+      const permissionError = new Error("User is not authorized to delete this picture.");
+      permissionError.statusCode = 403;
+      throw permissionError;
+    } **/
 
     const command = new DeleteObjectCommand({
       Bucket: process.env.BUCKET_NAME,

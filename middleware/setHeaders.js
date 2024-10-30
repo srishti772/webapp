@@ -1,8 +1,13 @@
 const setHeaders = (req, res, next) => {
-    res.set('Cache-Control', 'no-cache');
+  if (req.method === "GET" && req.path === "/healthz") {
+    res.set("Cache-Control", "no-cache");
+  }
 
-    next();
-  };
-  
-  module.exports = setHeaders;
-  
+  if (["POST", "GET"].includes(req.method) && req.path === "/v1/user/self") {
+    res.set("Accept", "image/jpeg, image/jpg, image/png");
+  }
+
+  next();
+};
+
+module.exports = setHeaders;

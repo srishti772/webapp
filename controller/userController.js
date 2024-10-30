@@ -136,6 +136,12 @@ const updateUser = (req, res, next) => {
 
 const uploadProfilePic = (req, res, next) => {
 
+  if (req.body && Object.keys(req.body).length > 0) {
+    const error = new Error("Invalid fields not allowed");
+    error.statusCode = 400;
+    return next(error);
+  }
+
   const file = req.file
   const userEmail = req.authenticatedUser;
   const allowedImageTypes = ['image/png', 'image/jpg', 'image/jpeg'];
@@ -156,10 +162,8 @@ const uploadProfilePic = (req, res, next) => {
     userService
     .uploadProfilePic(userEmail, file)
     .then((data) => {
-      console.log("***s3data",data);
       logData(req.method, req.originalUrl, req.get('user-agent'), 'info', req.body, 201,'Profile pic uploaded successfully', data);
       
-      res.setHeader("X-Accept", "image/jpeg, image/jpg, image/png");
       return res.status(201).json(data);
     })
     .catch((err) => {
@@ -170,6 +174,7 @@ const uploadProfilePic = (req, res, next) => {
 
 
 const getProfilePic = (req, res, next) => {
+   console.log(req);
   if (req.body && Object.keys(req.body).length > 0) {
     const error = new Error("Req Body not allowed");
     error.statusCode = 400;
