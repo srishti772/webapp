@@ -1,6 +1,9 @@
 const userModel = require("../model/userModel");
 const bcrypt = require("bcrypt");
-const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+const { S3Client, PutObjectCommand, GetObjectCommand } = require('@aws-sdk/client-s3');
+const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
+const s3Client = require( "../config/s3Client");
+
 const userProfilePicModel = require("../model/userProfilePicModel");
 const { v4: uuidv4 } = require('uuid'); 
 
@@ -13,6 +16,19 @@ const getUserByEmail = async (email) => {
      return user;
   } catch (err) {
     const dbError = new Error(`Unable to fetch user`);
+    dbError.statusCode = 503;
+    throw dbError;
+  }
+};
+
+const getProfilePicByUserId = async (id) => {
+  try {
+     const profilePic = await userProfilePicModel.findOne({
+      where: { user_id: id }
+    });
+     return profilePic;
+  } catch (err) {
+    const dbError = new Error(`Unable to fetch profile picture`);
     dbError.statusCode = 503;
     throw dbError;
   }
@@ -84,17 +100,13 @@ const updateUser = async (email, user) => {
 const uploadProfilePic = async(userEmail, file) =>{
   try{
     const existingUser = await getUserByEmail(userEmail);
-
-  //const s3Client = new S3Client({ region: process.env.BUCKET_REGION });
-
-  //testing client with credentials.. remove while deploying
-  const s3Client = new S3Client({
-    region: process.env.BUCKET_REGION,
-    credentials: {
-      accessKeyId: process.env.AWS_ACCESS_KEY,
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    },
-  });
+    const profilePic = await getProfilePicByUserId(existingUser.id);
+    
+    if (profilePic) {
+      const apiError = new Error("Profile picture already exists. Please delete to reupload.");
+      apiError.statusCode = 400;
+      throw apiError;
+    }
   const image_id=uuidv4();
 
   const uploadParams = {
@@ -112,7 +124,6 @@ const uploadProfilePic = async(userEmail, file) =>{
   const command = new PutObjectCommand(uploadParams);
  const data =  await s3Client.send(command);
 
-  console.log("***S3", data);
   const metadata = await userProfilePicModel.create({
     file_name: file.originalname,
     url: `${process.env.BUCKET_NAME}/${existingUser.id}/${file.originalname}`,
@@ -131,9 +142,46 @@ catch (err) {
 }
 }
 
+
+
+const getProfilePic = async (userEmail) => {
+  try {
+    const existingUser = await getUserByEmail(userEmail);
+  
+    const profilePic = await getProfilePicByUserId(existingUser.id);
+    
+    if (!profilePic) {
+      const apiError = new Error("Profile picture not found.");
+      apiError.statusCode = 404;
+      throw apiError;
+    }
+
+    const command = new GetObjectCommand({
+      Bucket: process.env.BUCKET_NAME,
+      Key: `${existingUser.id}/${profilePic.file_name}`,
+    });
+
+    const signedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 }); //valid for 1 hour
+
+    return {
+      profilePic,
+      signedUrl: signedUrl,
+    };
+    
+  } catch (err) {
+    const dbError = new Error();
+    dbError.message = err.message || "Unable to retrieve profile picture.";
+    dbError.statusCode = err.statusCode || 503;
+    throw dbError;
+  }
+};
+
+
+
 module.exports = {
   createUser,
   getAUser,
   updateUser,
-  uploadProfilePic
+  uploadProfilePic,
+  getProfilePic
 };

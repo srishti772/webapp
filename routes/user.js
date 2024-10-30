@@ -13,5 +13,6 @@ router.put("/self", basicAuth,userController.updateUser);
 
 router.post("/self/pic", basicAuth, upload.single('profilePic'),userController.uploadProfilePic);
 
+router.get('/self/pic', basicAuth, userController.getProfilePic); 
 
 module.exports = router;

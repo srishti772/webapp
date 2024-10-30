@@ -158,7 +158,8 @@ const uploadProfilePic = (req, res, next) => {
     .then((data) => {
       console.log("***s3data",data);
       logData(req.method, req.originalUrl, req.get('user-agent'), 'info', req.body, 201,'Profile pic uploaded successfully', data);
-
+      
+      res.setHeader("X-Accept", "image/jpeg, image/jpg, image/png");
       return res.status(201).json(data);
     })
     .catch((err) => {
@@ -166,10 +167,33 @@ const uploadProfilePic = (req, res, next) => {
     });
 
 }
+
+
+const getProfilePic = (req, res, next) => {
+  if (req.body && Object.keys(req.body).length > 0) {
+    const error = new Error("Req Body not allowed");
+    error.statusCode = 400;
+    return next(error);
+  }
+  const userEmail = req.authenticatedUser; 
+
+  userService
+    .getProfilePic(userEmail)
+    .then((data) => {
+      logData(req.method, req.originalUrl, req.get('user-agent'), 'info', req.body, 200, 'Profile picture retrieved successfully', data);
+      
+      return res.status(200).json(data);
+    })
+    .catch((err) => {
+      return next(err);
+    });
+};
+
 module.exports = {
   createUser,
   getAUser,
   updateUser,
   validateUserFields,
-  uploadProfilePic
+  uploadProfilePic,
+  getProfilePic
 };
