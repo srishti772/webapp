@@ -15,7 +15,6 @@ echo "========================================"
 echo "Copying webapp.zip to ${DIR}"
 echo "========================================"
 sudo cp -r webapp.zip "${DIR}"
-sudo cp cloudwatch-config.json "/opt"
 
 echo "========================================"
 echo " Setting ownership for /opt/csye6225/webapp"

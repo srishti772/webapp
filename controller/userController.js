@@ -1,6 +1,7 @@
 const logData = require("../config/logger/loggerUtil");
 const logger = require("../config/logger/winston");
 const upload = require("../config/multer");
+const statsd = require("../config/statsD");
 const userService = require("../service/userService");
 
 const validateUserFields = (userData, requiredfields, next, allowedField) => {
@@ -63,6 +64,7 @@ const validateUserFields = (userData, requiredfields, next, allowedField) => {
 };
 
 const createUser = (req, res, next) => {
+
   const userData = req.body;
 
   const requiredfields = new Set([
@@ -81,7 +83,7 @@ const createUser = (req, res, next) => {
   if (!isValid) return;
 
   userService
-    .createUser(userData)
+    .createUser(userData, `${req.method}_${req.originalUrl}`)
     .then((response) => {
    
       logData(req.method, req.originalUrl,  req.get('user-agent'), 'info', req.body, 200, 'User created successfully', response);
@@ -102,7 +104,7 @@ const getAUser = (req, res, next) => {
   const email = req.authenticatedUser;
 
   userService
-    .getAUser(email)
+    .getAUser(email, `${req.method}_${req.originalUrl}`)
     .then((user) => {
 
       logData(req.method, req.originalUrl,  req.get('user-agent'), 'info', req.body, 200, 'User fetched successfully', user);
@@ -121,7 +123,7 @@ const updateUser = (req, res, next) => {
   const isValid = validateUserFields(userData, null, next, allowedField);
   if (!isValid) return;
   userService
-    .updateUser(userId, userData)
+    .updateUser(userId, userData, `${req.method}_${req.originalUrl}`)
     .then((updatedUser) => {
   
       logData(req.method, req.originalUrl, req.get('user-agent'), 'info', req.body, 200,'User updated successfully', updatedUser);
@@ -160,7 +162,7 @@ const uploadProfilePic = (req, res, next) => {
     }
 
     userService
-    .uploadProfilePic(userEmail, file)
+    .uploadProfilePic(userEmail, file, `${req.method}_${req.originalUrl}`)
     .then((data) => {
       logData(req.method, req.originalUrl, req.get('user-agent'), 'info', req.body, 201,'Profile pic uploaded successfully', data);
       
@@ -183,7 +185,7 @@ const getProfilePic = (req, res, next) => {
   const userEmail = req.authenticatedUser; 
 
   userService
-    .getProfilePic(userEmail)
+    .getProfilePic(userEmail, `${req.method}_${req.originalUrl}`)
     .then((data) => {
       logData(req.method, req.originalUrl, req.get('user-agent'), 'info', req.body, 200, 'Profile picture retrieved successfully', data);
       
@@ -203,7 +205,7 @@ const deleteProfilePic = (req, res, next) => {
   const userEmail = req.authenticatedUser; 
 
   userService
-    .deleteProfilePic(userEmail)
+    .deleteProfilePic(userEmail, `${req.method}_${req.originalUrl}`)
     .then(() => {
       logData(req.method, req.originalUrl, req.get('user-agent'), 'info', req.body, 204, 'Profile picture deleted successfully');
       

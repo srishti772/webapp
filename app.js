@@ -7,6 +7,7 @@ const errorHandler = require("./middleware/errorHandler");
 const allowedMethods = require("./middleware/allowedMethods");
 const setHeaders = require("./middleware/setHeaders");
 const apiMetrics = require("./middleware/metrics");
+const { apiTimer, apiCounter } = require("./middleware/apicounter");
 
 const app = express();
 
@@ -14,7 +15,8 @@ app.use(setHeaders);
 app.use(express.json());
 
 app.use(allowedMethods);
-
+app.use(apiCounter);
+app.use(apiTimer);
 app.use(/^\/healthz$/, healthCheck);
 
 app.use("/v1/user", userRoutes);
