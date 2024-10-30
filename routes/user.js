@@ -15,4 +15,7 @@ router.post("/self/pic", basicAuth, upload.single('profilePic'),userController.u
 
 router.get('/self/pic', basicAuth, userController.getProfilePic); 
 
+router.delete('/self/pic', basicAuth, userController.deleteProfilePic); 
+
+
 module.exports = router;

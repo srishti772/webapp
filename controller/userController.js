@@ -189,11 +189,32 @@ const getProfilePic = (req, res, next) => {
     });
 };
 
+const deleteProfilePic = (req, res, next) => {
+  if (req.body && Object.keys(req.body).length > 0) {
+    const error = new Error("Req Body not allowed");
+    error.statusCode = 400;
+    return next(error);
+  }
+  const userEmail = req.authenticatedUser; 
+
+  userService
+    .deleteProfilePic(userEmail)
+    .then(() => {
+      logData(req.method, req.originalUrl, req.get('user-agent'), 'info', req.body, 204, 'Profile picture deleted successfully');
+      
+      return res.status(204).end();
+    })
+    .catch((err) => {
+      return next(err);
+    });
+};
+
 module.exports = {
   createUser,
   getAUser,
   updateUser,
   validateUserFields,
   uploadProfilePic,
-  getProfilePic
+  getProfilePic,
+  deleteProfilePic
 };

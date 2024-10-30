@@ -1,6 +1,6 @@
 const userModel = require("../model/userModel");
 const bcrypt = require("bcrypt");
-const { S3Client, PutObjectCommand, GetObjectCommand } = require('@aws-sdk/client-s3');
+const { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const s3Client = require( "../config/s3Client");
 
@@ -162,11 +162,9 @@ const getProfilePic = async (userEmail) => {
     });
 
     const signedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 }); //valid for 1 hour
-
-    return {
-      profilePic,
-      signedUrl: signedUrl,
-    };
+    profilePic.url = signedUrl;
+    return profilePic;
+    
     
   } catch (err) {
     const dbError = new Error();
@@ -176,12 +174,42 @@ const getProfilePic = async (userEmail) => {
   }
 };
 
+const deleteProfilePic = async (userEmail) => {
+  try {
+    const existingUser = await getUserByEmail(userEmail);
+  
+    const profilePic = await getProfilePicByUserId(existingUser.id);
+    
+    if (!profilePic) {
+      const apiError = new Error("Profile picture not found.");
+      apiError.statusCode = 404;
+      throw apiError;
+    }
 
+    const command = new DeleteObjectCommand({
+      Bucket: process.env.BUCKET_NAME,
+      Key: `${existingUser.id}/${profilePic.file_name}`,
+    });
+
+    await s3Client.send(command);
+
+    await userProfilePicModel.destroy({
+      where: { user_id: existingUser.id },
+    });
+
+  } catch (err) {
+    const dbError = new Error();
+    dbError.message = err.message || "Unable to retrieve profile picture.";
+    dbError.statusCode = err.statusCode || 503;
+    throw dbError;
+  }
+};
 
 module.exports = {
   createUser,
   getAUser,
   updateUser,
   uploadProfilePic,
-  getProfilePic
+  getProfilePic,
+  deleteProfilePic
 };
