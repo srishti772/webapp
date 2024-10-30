@@ -11,26 +11,25 @@ const logData = (
   data
 ) => {
   const logEntry = {
-    url: `${method} ${originalUrl} ${userAgent}`,
     request: {
       body: body,
     },
     response: {
       status: statusCode,
       message: message,
-    },
-
-
+    }
   };
 
   if (data !== null && data !== undefined) {
-    logEntry.response.data = data; 
+    logEntry.response.data = data;
   }
 
+  const logEntryFormatted = `[${type}] : [url: ${method} ${originalUrl} ${userAgent}] \n status: ${statusCode} \n message: ${message}`;
+
   if (type === "info") {
-    logger.info(logEntry);
+    logger.info(`${logEntryFormatted}`);
   } else if (type === "error") {
-    logger.error(logEntry);
+    logger.error(`${logEntryFormatted}`);
   }
 };
 

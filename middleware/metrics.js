@@ -1,21 +1,17 @@
-const StatsD = require('node-statsd');
-require("dotenv").config();
+const statsd = require("../config/statsD.js");
 
-//StatsD client
-const statsd = new StatsD({
-  host: process.env.STATSD_CLIENT || localhost,
-  port: process.env.STATSD_PORT || 8125,       
-});
 
-const statsDMiddleware = (req, res, next) => {
-  const start = process.hrtime();
+const apiMetrics = (req, res, next) => {
+  const start = Date.now()
 
   res.on('finish', () => {
     
-    statsd.increment(`api.calls.${req.path}`);
-  });
+    const statsdTag = `${req.method}${req.baseUrl}${req.route.path}`;
+
+    statsd.increment(`${statsdTag}.reqCount`);
+});
 
   next(); 
 };
 
-module.exports = statsDMiddleware;
+module.exports = apiMetrics;

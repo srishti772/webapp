@@ -116,6 +116,12 @@ build {
     source      = "../webapp.service"
     destination = "~/webapp.service"
   }
+
+  provisioner "file" {
+  source      = "../cloudwatch-config.json"
+  destination = "~/cloudwatch-config.json"
+  }
+
   provisioner "shell" {
 
     scripts = [

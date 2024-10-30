@@ -1,5 +1,6 @@
 const logData = require("../config/logger/loggerUtil");
 const logger = require("../config/logger/winston");
+const upload = require("../config/multer");
 const userService = require("../service/userService");
 
 const validateUserFields = (userData, requiredfields, next, allowedField) => {
@@ -131,9 +132,44 @@ const updateUser = (req, res, next) => {
       return next(err);
     });
 };
+
+
+const uploadProfilePic = (req, res, next) => {
+
+  const file = req.file
+  const userEmail = req.authenticatedUser;
+  const allowedImageTypes = ['image/png', 'image/jpg', 'image/jpeg'];
+
+    if (!file) 
+    {
+      const error = new Error("File not received");
+      error.statusCode = 400;
+      return next(error);
+    }
+    if (!allowedImageTypes.includes(file.mimetype)) {
+
+      const error = new Error("Invalid file type. Only PNG, JPG, and JPEG are allowed!");
+      error.statusCode = 400;
+      return next(error);
+    }
+
+    userService
+    .uploadProfilePic(userEmail, file)
+    .then((data) => {
+      console.log("***s3data",data);
+      logData(req.method, req.originalUrl, req.get('user-agent'), 'info', req.body, 201,'Profile pic uploaded successfully', data);
+
+      return res.status(201).json(data);
+    })
+    .catch((err) => {
+      return next(err);
+    });
+
+}
 module.exports = {
   createUser,
   getAUser,
   updateUser,
   validateUserFields,
+  uploadProfilePic
 };

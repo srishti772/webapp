@@ -10,11 +10,11 @@ afterAll(async () => {
   await userModel.sequelize.close();
 });
 
-describe("REGISTER USER POST /v2/user", () => {
+describe("REGISTER USER POST /v1/user", () => {
   describe("Given valid user details", () => {
     test("Should respond with 201 Created and the correct payload", async () => {
       //Creating a new user
-      const response = await request(app).post("/v2/user").send({
+      const response = await request(app).post("/v1/user").send({
         first_name: "John",
         last_name: "Doe",
         password: "test123",
@@ -48,7 +48,7 @@ describe("REGISTER USER POST /v2/user", () => {
 
   describe("Given duplicate user details", () => {
     test("Should respond with 400 Bad Request for duplicate user", async () => {
-      const duplicateResponse = await request(app).post("/v2/user").send({
+      const duplicateResponse = await request(app).post("/v1/user").send({
         first_name: "John",
         last_name: "Doe",
         email: "john.doe@example.com",
@@ -93,7 +93,7 @@ describe("REGISTER USER POST /v2/user", () => {
 
     missingFieldsTests.forEach(({ field, payload }) => {
       test(`Should respond with 400 Bad Request when ${field} is missing`, async () => {
-        const response = await request(app).post("/v2/user").send(payload);
+        const response = await request(app).post("/v1/user").send(payload);
         expect(response.status).toBe(400);
       });
     });

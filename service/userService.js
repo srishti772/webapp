@@ -1,6 +1,10 @@
 const userModel = require("../model/userModel");
 const bcrypt = require("bcrypt");
+const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+const userProfilePicModel = require("../model/userProfilePicModel");
+const { v4: uuidv4 } = require('uuid'); 
 
+require("dotenv").config();
 const getUserByEmail = async (email) => {
   try {
     const user = await userModel.findOne({
@@ -77,10 +81,59 @@ const updateUser = async (email, user) => {
   }
 };
 
+const uploadProfilePic = async(userEmail, file) =>{
+  try{
+    const existingUser = await getUserByEmail(userEmail);
 
+  //const s3Client = new S3Client({ region: process.env.BUCKET_REGION });
+
+  //testing client with credentials.. remove while deploying
+  const s3Client = new S3Client({
+    region: process.env.BUCKET_REGION,
+    credentials: {
+      accessKeyId: process.env.AWS_ACCESS_KEY,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    },
+  });
+  const image_id=uuidv4();
+
+  const uploadParams = {
+    Bucket: process.env.BUCKET_NAME,
+    Key: `${existingUser.id}/${file.originalname}`,
+    Body: file.buffer, 
+    Metadata: {
+      user_id: existingUser.id, 
+      id: image_id,
+      user_email: existingUser.email,
+    },
+    ContentType: file.mimetype, 
+  };
+
+  const command = new PutObjectCommand(uploadParams);
+ const data =  await s3Client.send(command);
+
+  console.log("***S3", data);
+  const metadata = await userProfilePicModel.create({
+    file_name: file.originalname,
+    url: `${process.env.BUCKET_NAME}/${existingUser.id}/${file.originalname}`,
+    upload_date: new Date(),
+    user_id: existingUser.id,
+    id:image_id,
+  }); 
+  return metadata.toJSON();
+
+} 
+catch (err) {
+  const s3Error = new Error();
+  s3Error.message = err.message ||  "Unable to Upload Picture";
+  s3Error.statusCode =err.statusCode ||  503;
+  throw s3Error;
+}
+}
 
 module.exports = {
   createUser,
   getAUser,
   updateUser,
+  uploadProfilePic
 };
