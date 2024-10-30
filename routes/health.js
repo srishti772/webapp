@@ -2,7 +2,9 @@ const express = require("express");
 const { checkDbConnection } = require("../config/dbConnection");
 const logger = require("../config/logger/winston");
 const logData = require("../config/logger/loggerUtil");
+const statsd = require("../config/statsD");
 const router = express.Router();
+const { performance } = require('perf_hooks');
 
 router.get("/", async (req, res, next) => {
   if (
@@ -15,10 +17,18 @@ router.get("/", async (req, res, next) => {
   }
 
   // Check database connection
+  const start = performance.now();
+
   try {
     await checkDbConnection();
+    const duration = performance.now() - start;
+    statsd.timing(`${req.method}_${req.originalUrl}`, duration, { label: "dbSetup_Success" });
+
     console.log("Connectd to MySQL");
   } catch (error) {
+    const duration = performance.now() - start;
+    statsd.timing(`${req.method}_${req.originalUrl}`, duration, { label: "dbSetup_Failure" });
+
     console.error(error);
     const dbError = new Error(error.body);
     dbError.statusCode = 503;

@@ -6,16 +6,17 @@ const s3Client = require( "../config/s3Client");
 const statsd = require("../config/statsD");
 const userProfilePicModel = require("../model/userProfilePicModel");
 const { v4: uuidv4 } = require('uuid'); 
+const { performance } = require('perf_hooks');
 
 require("dotenv").config();
 const getUserByEmail = async (email, metricKey) => {
   try {
-    const start=Date.now();
+    let start=performance.now();
     const user = await userModel.findOne({
       where: { email },
     });
-    const duration = Date.now() - start;
-    statsd.timing(metricKey, duration);
+    let duration = performance.now() - start;
+    statsd.timing(metricKey, duration, { label: 'getUserByEmail_Duration' });
      return user;
   } catch (err) {
     const dbError = new Error(`Unable to fetch user`);
@@ -26,13 +27,13 @@ const getUserByEmail = async (email, metricKey) => {
 
 const getProfilePicByUserId = async (id, metricKey) => {
   try {
-    const start=Date.now();
+    const start = performance.now();
 
      const profilePic = await userProfilePicModel.findOne({
       where: { user_id: id }
     });
-    const duration = Date.now() - start;
-    statsd.timing(metricKey, duration);
+    const duration = performance.now() - start;
+    statsd.timing(metricKey, duration, { label: 'getProfilePicByUserId_Duration' });
      return profilePic;
   } catch (err) {
     const dbError = new Error(`Unable to fetch profile picture`);
@@ -42,22 +43,22 @@ const getProfilePicByUserId = async (id, metricKey) => {
 };
 
 const createUser = async (new_user, metricKey) => {
-  const existingUser = await getUserByEmail(new_user.email,  `${metricKey}_checkUser_dbCall`);
+  const existingUser = await getUserByEmail(new_user.email, metricKey);
   if (existingUser) {
     const apiError = new Error("User already exists.");
     apiError.statusCode = 400;
     throw apiError;
   }
   try {
-    const start=Date.now();
+    const start = performance.now();
     const user = await userModel.create({
       first_name: new_user.first_name,
       last_name: new_user.last_name,
       password: await bcrypt.hash(new_user.password, 10),
       email: new_user.email,
     });
-    const duration = Date.now() - start;
-    statsd.timing(`${metricKey}_createUser_dbCall`, duration);
+    const duration = performance.now() - start;
+    statsd.timing(metricKey, duration, { label: 'createUser_DBWriteTime' });
     return user.toJSON();
   } catch (err) {
     const dbError = new Error();
@@ -69,7 +70,7 @@ const createUser = async (new_user, metricKey) => {
 
 const getAUser = async (email, metricKey) => {
   try {
-    const existingUser = await getUserByEmail(email,`${metricKey}_dbCall`);
+    const existingUser = await getUserByEmail(email,metricKey);
     
     if (!existingUser) {
         const apiError = new Error("User does not exist.");
@@ -87,7 +88,7 @@ const getAUser = async (email, metricKey) => {
 
 const updateUser = async (email, user, metricKey) => {
   try {
-    const curruser = await getUserByEmail(email, `${metricKey}_getUser_dbCall`);
+    const curruser = await getUserByEmail(email, metricKey);
     if (!curruser) {
         const apiError = new Error("User does not exist.");
         apiError.statusCode = 404;
@@ -98,10 +99,10 @@ const updateUser = async (email, user, metricKey) => {
     curruser.password = user.password? await bcrypt.hash(user.password, 10) : curruser.password;
     curruser.email = user.email ? user.email : curruser.email;
     curruser.account_updated=new Date();
-const start = Date.now();
+    const start = performance.now();
     await curruser.save();
-    const duration = Date.now() - start;
-    statsd.timing(`${metricKey}_updateUser_dbCall`, duration);
+    const duration = performance.now() - start;
+    statsd.timing(metricKey, duration, { label: 'updateUser_DBUpdateTime' });
   } catch (err) {
     const dbError = new Error();
     dbError.message = err.message ||  "Unable to Update User";
@@ -112,8 +113,8 @@ const start = Date.now();
 
 const uploadProfilePic = async(userEmail, file, metricKey) =>{
   try{
-    const existingUser = await getUserByEmail(userEmail,  `${metricKey}_getUser_dbCall`);
-    const profilePic = await getProfilePicByUserId(existingUser.id, `${metricKey}_getPic_dbCall`);
+    const existingUser = await getUserByEmail(userEmail, metricKey);
+    const profilePic = await getProfilePicByUserId(existingUser.id, metricKey);
     
     if (profilePic) {
       const apiError = new Error("Profile picture already exists. Please delete to reupload.");
@@ -135,11 +136,14 @@ const uploadProfilePic = async(userEmail, file, metricKey) =>{
   };
 
   const command = new PutObjectCommand(uploadParams);
-  let start=Date.now();
- const data =  await s3Client.send(command);
- let duration=Date.now()-start;
-  statsd.timing(`${metricKey}_s3Call`, duration);
-  start=Date.now();
+  let start = performance.now();
+
+  const data =  await s3Client.send(command);
+
+  let duration = performance.now() - start;
+  statsd.timing(metricKey, duration, { label: 'uploadProfilePic_S3UploadTime' });
+
+  start= performance.now();
   const metadata = await userProfilePicModel.create({
     file_name: file.originalname,
     url: `${process.env.BUCKET_NAME}/${existingUser.id}/${file.originalname}`,
@@ -147,9 +151,9 @@ const uploadProfilePic = async(userEmail, file, metricKey) =>{
     user_id: existingUser.id,
     id:image_id,
   }); 
-  duration=Date.now()-start;
-  statsd.timing(`${metricKey}_savePic_dbCall`, duration);
-  return metadata.toJSON();
+duration=Date.now()-start;
+statsd.timing(metricKey, duration, { label: 'uploadProfilePic_DBWriteTime' });
+return metadata.toJSON();
 
 } 
 catch (err) {
@@ -164,9 +168,9 @@ catch (err) {
 
 const getProfilePic = async (userEmail, metricKey) => {
   try {
-    const existingUser = await getUserByEmail(userEmail,  `${metricKey}_checkUser_dbCall`);
+    const existingUser = await getUserByEmail(userEmail,  metricKey);
   
-    const profilePic = await getProfilePicByUserId(existingUser.id, `${metricKey}_dbCall`);
+    const profilePic = await getProfilePicByUserId(existingUser.id, metricKey);
     
     if (!profilePic) {
       const apiError = new Error("Profile picture not found.");
@@ -178,10 +182,12 @@ const getProfilePic = async (userEmail, metricKey) => {
       Bucket: process.env.BUCKET_NAME,
       Key: `${existingUser.id}/${profilePic.file_name}`,
     });
-    let start=Date.now();
+    const start = performance.now();
+
     const signedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 }); //valid for 1 hour
-    let duration=Date.now()-start;
-    statsd.timing(`${metricKey}_s3Call`, duration);
+
+     const duration = performance.now() - start;
+    statsd.timing(metricKey, duration, { label: 'getProfilePic_S3SignedUrlTime' });
 
     profilePic.url = signedUrl;
     return profilePic;
@@ -197,9 +203,9 @@ const getProfilePic = async (userEmail, metricKey) => {
 
 const deleteProfilePic = async (userEmail, metricKey) => {
   try {
-    const existingUser = await getUserByEmail(userEmail,  `${metricKey}_checkUser_dbCall`);
+    const existingUser = await getUserByEmail(userEmail, metricKey);
   
-    const profilePic = await getProfilePicByUserId(existingUser.id, `${metricKey}_getPic_dbCall`);
+    const profilePic = await getProfilePicByUserId(existingUser.id,metricKey);
     
     if (!profilePic) {
       const apiError = new Error("Profile picture not found.");
@@ -224,19 +230,20 @@ const deleteProfilePic = async (userEmail, metricKey) => {
       Bucket: process.env.BUCKET_NAME,
       Key: `${existingUser.id}/${profilePic.file_name}`,
     });
-    let start=Date.now();
+    let start = performance.now();
 
     await s3Client.send(command);
-    let duration=Date.now()-start;
-    statsd.timing(`${metricKey}_s3Call`, duration);
 
-    start=Date.now();
+    let duration = performance.now() - start;
+    statsd.timing(metricKey, duration, { label: 'deleteProfilePic_S3DeleteTime' });
+
+    start = performance.now();
     await userProfilePicModel.destroy({
       where: { user_id: existingUser.id },
     });
     
-  duration=Date.now()-start;
-  statsd.timing(`${metricKey}_deletePic_dbCall`, duration);
+    duration = performance.now() - start;
+    statsd.timing(metricKey, duration, { label: 'deleteProfilePic_DBDeleteTime' });
 
   } catch (err) {
     const dbError = new Error();

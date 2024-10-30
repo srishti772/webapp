@@ -3,7 +3,7 @@ require("dotenv").config();
 
 //StatsD client
 const statsd = new StatsD({
-  host: process.env.STATSD_CLIENT || localhost,
+  host: process.env.STATSD_CLIENT || '127.0.0.1',
   port: process.env.STATSD_PORT || 8125,       
 });
 

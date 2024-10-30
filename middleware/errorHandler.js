@@ -3,7 +3,7 @@ const logger = require("../config/logger/winston");
 const multer = require('multer'); 
 const errorHandler = (err, req, res, next) => {
   if (err) {
-    console.log("Error middleware : ", err.message, err.statusCode, err);
+    console.log("Error middleware : ", err.message, err.statusCode);
     let status = err.statusCode || 500;
     let message = err.message || "Some error occured";
 
@@ -13,7 +13,7 @@ const errorHandler = (err, req, res, next) => {
           status = 400;
           message = `${err.message}`; 
           break;
-          
+
         case 'LIMIT_FILE_SIZE':
           status = 400;
           message = `${err.message}`; 

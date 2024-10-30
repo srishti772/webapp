@@ -6,7 +6,6 @@ const authRoutes = require("./routes/auth");
 const errorHandler = require("./middleware/errorHandler");
 const allowedMethods = require("./middleware/allowedMethods");
 const setHeaders = require("./middleware/setHeaders");
-const apiMetrics = require("./middleware/metrics");
 const { apiTimer, apiCounter } = require("./middleware/apicounter");
 
 const app = express();
