@@ -4,6 +4,7 @@ const upload = require("../config/multer");
 const statsd = require("../config/statsD");
 const userService = require("../service/userService");
 
+
 const validateUserFields = (userData, requiredfields, next, allowedField) => {
   if (requiredfields) {
     for (const field of requiredfields) {
@@ -96,12 +97,21 @@ const createUser = (req, res, next) => {
 };
 
 const getAUser = (req, res, next) => {
-  if (req.body && Object.keys(req.body).length > 0) {
-    const error = new Error("Req Body not allowed");
-    error.statusCode = 400;
-    return next(error);
-  }
-  const email = req.authenticatedUser;
+ // Check if there is a request body
+ if (req.body && Object.keys(req.body).length > 0) {
+  const error = new Error("Request body not allowed in GET requests");
+  error.statusCode = 400;
+  return next(error);
+}
+
+// Check if Content-Type is multipart/form-data
+const contentType = req.headers['content-type'];
+if (contentType && contentType.startsWith('multipart/form-data')) {
+  const error = new Error("Multipart form data not allowed in GET requests");
+  error.statusCode = 400;
+  return next(error);
+}
+const email = req.authenticatedUser;
 
   userService
     .getAUser(email, `${req.method}_${req.originalUrl}`)
@@ -137,12 +147,20 @@ const updateUser = (req, res, next) => {
 
 
 const uploadProfilePic = (req, res, next) => {
+ // Check if there is a request body
+ if (req.body && Object.keys(req.body).length > 0) {
+  const error = new Error("Request body not allowed in GET requests");
+  error.statusCode = 400;
+  return next(error);
+}
 
-  if (req.body && Object.keys(req.body).length > 0) {
-    const error = new Error("Invalid fields not allowed");
-    error.statusCode = 400;
-    return next(error);
-  }
+// Check if Content-Type is multipart/form-data
+const contentType = req.headers['content-type'];
+if (contentType && contentType.startsWith('multipart/form-data')) {
+  const error = new Error("Multipart form data not allowed in GET requests");
+  error.statusCode = 400;
+  return next(error);
+}
 
   const file = req.file
   const userEmail = req.authenticatedUser;
@@ -176,13 +194,21 @@ const uploadProfilePic = (req, res, next) => {
 
 
 const getProfilePic = (req, res, next) => {
-   console.log(req);
-  if (req.body && Object.keys(req.body).length > 0) {
-    const error = new Error("Req Body not allowed");
-    error.statusCode = 400;
-    return next(error);
-  }
-  const userEmail = req.authenticatedUser; 
+ // Check if there is a request body
+ if (req.body && Object.keys(req.body).length > 0) {
+  const error = new Error("Request body not allowed in GET requests");
+  error.statusCode = 400;
+  return next(error);
+}
+
+// Check if Content-Type is multipart/form-data
+const contentType = req.headers['content-type'];
+if (contentType && contentType.startsWith('multipart/form-data')) {
+  const error = new Error("Multipart form data not allowed in GET requests");
+  error.statusCode = 400;
+  return next(error);
+}
+const userEmail = req.authenticatedUser; 
 
   userService
     .getProfilePic(userEmail, `${req.method}_${req.originalUrl}`)
@@ -208,7 +234,6 @@ const deleteProfilePic = (req, res, next) => {
     .deleteProfilePic(userEmail, `${req.method}_${req.originalUrl}`)
     .then(() => {
       logData(req.method, req.originalUrl, req.get('user-agent'), 'info', req.body, 204, 'Profile picture deleted successfully');
-      
       return res.status(204).end();
     })
     .catch((err) => {

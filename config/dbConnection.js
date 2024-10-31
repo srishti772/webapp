@@ -24,6 +24,8 @@ const checkDbConnection = async () => {
 };
 
 const syncDb = async () => {
+
+
   return await sequelize.sync({ alter: true });
 };
 

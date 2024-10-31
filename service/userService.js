@@ -1,23 +1,29 @@
 const userModel = require("../model/userModel");
 const bcrypt = require("bcrypt");
-const { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand, HeadObjectCommand } = require('@aws-sdk/client-s3');
+const {
+  S3Client,
+  PutObjectCommand,
+  GetObjectCommand,
+  DeleteObjectCommand,
+  HeadObjectCommand,
+} = require("@aws-sdk/client-s3");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
-const s3Client = require( "../config/s3Client");
+const s3Client = require("../config/s3Client");
 const statsd = require("../config/statsD");
 const userProfilePicModel = require("../model/userProfilePicModel");
-const { v4: uuidv4 } = require('uuid'); 
-const { performance } = require('perf_hooks');
+const { v4: uuidv4 } = require("uuid");
+const { performance } = require("perf_hooks");
 
 require("dotenv").config();
 const getUserByEmail = async (email, metricKey) => {
   try {
-    let start=performance.now();
+    let start = performance.now();
     const user = await userModel.findOne({
       where: { email },
     });
     let duration = performance.now() - start;
-    statsd.timing(metricKey, duration, { label: 'getUserByEmail_Duration' });
-     return user;
+    statsd.timing(`${metricKey}.getUserByEmail.Duration`, duration);
+    return user;
   } catch (err) {
     const dbError = new Error(`Unable to fetch user`);
     dbError.statusCode = 503;
@@ -29,12 +35,12 @@ const getProfilePicByUserId = async (id, metricKey) => {
   try {
     const start = performance.now();
 
-     const profilePic = await userProfilePicModel.findOne({
-      where: { user_id: id }
+    const profilePic = await userProfilePicModel.findOne({
+      where: { user_id: id },
     });
     const duration = performance.now() - start;
-    statsd.timing(metricKey, duration, { label: 'getProfilePicByUserId_Duration' });
-     return profilePic;
+    statsd.timing(`${metricKey}.getProfilePicByUserId.Duration`, duration);
+    return profilePic;
   } catch (err) {
     const dbError = new Error(`Unable to fetch profile picture`);
     dbError.statusCode = 503;
@@ -58,30 +64,30 @@ const createUser = async (new_user, metricKey) => {
       email: new_user.email,
     });
     const duration = performance.now() - start;
-    statsd.timing(metricKey, duration, { label: 'createUser_DBWriteTime' });
+    statsd.timing(`${metricKey}.createUser.DBWriteTime`, duration);
     return user.toJSON();
   } catch (err) {
     const dbError = new Error();
-    dbError.message = err.message ||  "Unable to Create User";
-    dbError.statusCode =err.statusCode ||  503;
+    dbError.message = err.message || "Unable to Create User";
+    dbError.statusCode = err.statusCode || 503;
     throw dbError;
   }
 };
 
 const getAUser = async (email, metricKey) => {
   try {
-    const existingUser = await getUserByEmail(email,metricKey);
-    
+    const existingUser = await getUserByEmail(email, metricKey);
+
     if (!existingUser) {
-        const apiError = new Error("User does not exist.");
-        apiError.statusCode = 404;
-        throw apiError;
+      const apiError = new Error("User does not exist.");
+      apiError.statusCode = 404;
+      throw apiError;
     }
     return existingUser;
   } catch (err) {
     const dbError = new Error();
-    dbError.message = err.message ||  "Unable to Fetch User";
-    dbError.statusCode =err.statusCode ||  503;
+    dbError.message = err.message || "Unable to Fetch User";
+    dbError.statusCode = err.statusCode || 503;
     throw dbError;
   }
 };
@@ -90,88 +96,90 @@ const updateUser = async (email, user, metricKey) => {
   try {
     const curruser = await getUserByEmail(email, metricKey);
     if (!curruser) {
-        const apiError = new Error("User does not exist.");
-        apiError.statusCode = 404;
-        throw apiError;
+      const apiError = new Error("User does not exist.");
+      apiError.statusCode = 404;
+      throw apiError;
     }
-    curruser.first_name = user.first_name ? user.first_name : curruser.first_name;
+    curruser.first_name = user.first_name
+      ? user.first_name
+      : curruser.first_name;
     curruser.last_name = user.last_name ? user.last_name : curruser.last_name;
-    curruser.password = user.password? await bcrypt.hash(user.password, 10) : curruser.password;
+    curruser.password = user.password
+      ? await bcrypt.hash(user.password, 10)
+      : curruser.password;
     curruser.email = user.email ? user.email : curruser.email;
-    curruser.account_updated=new Date();
+    curruser.account_updated = new Date();
     const start = performance.now();
     await curruser.save();
     const duration = performance.now() - start;
-    statsd.timing(metricKey, duration, { label: 'updateUser_DBUpdateTime' });
+    statsd.timing(`${metricKey}.updateUser.DBUpdateTime`, duration);
   } catch (err) {
     const dbError = new Error();
-    dbError.message = err.message ||  "Unable to Update User";
-    dbError.statusCode =err.statusCode ||  503;
+    dbError.message = err.message || "Unable to Update User";
+    dbError.statusCode = err.statusCode || 503;
     throw dbError;
   }
 };
 
-const uploadProfilePic = async(userEmail, file, metricKey) =>{
-  try{
+const uploadProfilePic = async (userEmail, file, metricKey) => {
+  try {
     const existingUser = await getUserByEmail(userEmail, metricKey);
     const profilePic = await getProfilePicByUserId(existingUser.id, metricKey);
-    
+
     if (profilePic) {
-      const apiError = new Error("Profile picture already exists. Please delete to reupload.");
+      const apiError = new Error(
+        "Profile picture already exists. Please delete to reupload."
+      );
       apiError.statusCode = 400;
       throw apiError;
     }
-  const image_id=uuidv4();
+    const image_id = uuidv4();
 
-  const uploadParams = {
-    Bucket: process.env.BUCKET_NAME,
-    Key: `${existingUser.id}/${file.originalname}`,
-    Body: file.buffer, 
-    Metadata: {
-      user_id: existingUser.id, 
+    const uploadParams = {
+      Bucket: process.env.BUCKET_NAME,
+      Key: `${existingUser.id}/${file.originalname}`,
+      Body: file.buffer,
+      Metadata: {
+        user_id: existingUser.id,
+        id: image_id,
+        user_email: existingUser.email,
+      },
+      ContentType: file.mimetype,
+    };
+
+    const command = new PutObjectCommand(uploadParams);
+    let start = performance.now();
+
+    const data = await s3Client.send(command);
+
+    let duration = performance.now() - start;
+    statsd.timing(`${metricKey}.uploadProfilePic.S3UploadTime`, duration);
+
+    start = performance.now();
+    const metadata = await userProfilePicModel.create({
+      file_name: file.originalname,
+      url: `${process.env.BUCKET_NAME}/${existingUser.id}/${file.originalname}`,
+      upload_date: new Date(),
+      user_id: existingUser.id,
       id: image_id,
-      user_email: existingUser.email,
-    },
-    ContentType: file.mimetype, 
-  };
-
-  const command = new PutObjectCommand(uploadParams);
-  let start = performance.now();
-
-  const data =  await s3Client.send(command);
-
-  let duration = performance.now() - start;
-  statsd.timing(metricKey, duration, { label: 'uploadProfilePic_S3UploadTime' });
-
-  start= performance.now();
-  const metadata = await userProfilePicModel.create({
-    file_name: file.originalname,
-    url: `${process.env.BUCKET_NAME}/${existingUser.id}/${file.originalname}`,
-    upload_date: new Date(),
-    user_id: existingUser.id,
-    id:image_id,
-  }); 
-duration=Date.now()-start;
-statsd.timing(metricKey, duration, { label: 'uploadProfilePic_DBWriteTime' });
-return metadata.toJSON();
-
-} 
-catch (err) {
-  const s3Error = new Error();
-  s3Error.message = err.message ||  "Unable to Upload Picture";
-  s3Error.statusCode =err.statusCode ||  503;
-  throw s3Error;
-}
-}
-
-
+    });
+    duration = Date.now() - start;
+    statsd.timing(`${metricKey}.uploadProfilePic.DBWriteTime`, duration);
+    return metadata.toJSON();
+  } catch (err) {
+    const s3Error = new Error();
+    s3Error.message = err.message || "Unable to Upload Picture";
+    s3Error.statusCode = err.statusCode || 503;
+    throw s3Error;
+  }
+};
 
 const getProfilePic = async (userEmail, metricKey) => {
   try {
-    const existingUser = await getUserByEmail(userEmail,  metricKey);
-  
+    const existingUser = await getUserByEmail(userEmail, metricKey);
+
     const profilePic = await getProfilePicByUserId(existingUser.id, metricKey);
-    
+
     if (!profilePic) {
       const apiError = new Error("Profile picture not found.");
       apiError.statusCode = 404;
@@ -184,15 +192,15 @@ const getProfilePic = async (userEmail, metricKey) => {
     });
     const start = performance.now();
 
-    const signedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 }); //valid for 1 hour
+    const signedUrl = await getSignedUrl(s3Client, command, {
+      expiresIn: 3600,
+    }); //valid for 1 hour
 
-     const duration = performance.now() - start;
-    statsd.timing(metricKey, duration, { label: 'getProfilePic_S3SignedUrlTime' });
+    const duration = performance.now() - start;
+    statsd.timing(`${metricKey}.getProfilePic.S3SignedUrlTime`, duration);
 
-    profilePic.url = signedUrl;
+    //profilePic.url = signedUrl;
     return profilePic;
-    
-    
   } catch (err) {
     const dbError = new Error();
     dbError.message = err.message || "Unable to retrieve profile picture.";
@@ -204,9 +212,9 @@ const getProfilePic = async (userEmail, metricKey) => {
 const deleteProfilePic = async (userEmail, metricKey) => {
   try {
     const existingUser = await getUserByEmail(userEmail, metricKey);
-  
-    const profilePic = await getProfilePicByUserId(existingUser.id,metricKey);
-    
+
+    const profilePic = await getProfilePicByUserId(existingUser.id, metricKey);
+
     if (!profilePic) {
       const apiError = new Error("Profile picture not found.");
       apiError.statusCode = 404;
@@ -235,16 +243,15 @@ const deleteProfilePic = async (userEmail, metricKey) => {
     await s3Client.send(command);
 
     let duration = performance.now() - start;
-    statsd.timing(metricKey, duration, { label: 'deleteProfilePic_S3DeleteTime' });
+    statsd.timing(`${metricKey}.deleteProfilePic.S3DeleteTime`, duration);
 
     start = performance.now();
     await userProfilePicModel.destroy({
       where: { user_id: existingUser.id },
     });
-    
-    duration = performance.now() - start;
-    statsd.timing(metricKey, duration, { label: 'deleteProfilePic_DBDeleteTime' });
 
+    duration = performance.now() - start;
+    statsd.timing(`${metricKey}.deleteProfilePic.DBDeleteTime`, duration);
   } catch (err) {
     const dbError = new Error();
     dbError.message = err.message || "Unable to retrieve profile picture.";
@@ -259,5 +266,5 @@ module.exports = {
   updateUser,
   uploadProfilePic,
   getProfilePic,
-  deleteProfilePic
+  deleteProfilePic,
 };

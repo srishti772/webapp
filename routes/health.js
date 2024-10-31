@@ -22,12 +22,12 @@ router.get("/", async (req, res, next) => {
   try {
     await checkDbConnection();
     const duration = performance.now() - start;
-    statsd.timing(`${req.method}_${req.originalUrl}`, duration, { label: "dbSetup_Success" });
+    statsd.timing(`${req.method}_${req.originalUrl}.dbSetup_Success`, duration);
 
     console.log("Connectd to MySQL");
   } catch (error) {
     const duration = performance.now() - start;
-    statsd.timing(`${req.method}_${req.originalUrl}`, duration, { label: "dbSetup_Failure" });
+    statsd.timing(`${req.method}_${req.originalUrl}.dbSetup_Failiure`, duration);
 
     console.error(error);
     const dbError = new Error(error.body);

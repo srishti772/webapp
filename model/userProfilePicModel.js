@@ -24,11 +24,15 @@ const userProfilePicModel = db.define("UserProfilePic", {
   user_id: {
     type: DataTypes.UUID,
     allowNull: false,
-  
+    references: {
+      model: 'users', // Reference to userModel
+      key: 'id',        // Foreign key on userModel's 'id'
+    },
   }
 }, {
   timestamps: false,
 });
+
 
 
 userProfilePicModel.prototype.toJSON = function () {
