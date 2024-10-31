@@ -117,7 +117,7 @@ build {
     destination = "~/webapp.service"
   }
 
-  
+
   provisioner "shell" {
 
     scripts = [
