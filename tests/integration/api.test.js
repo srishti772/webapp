@@ -7,6 +7,7 @@ beforeAll(async () => {
 });
 afterAll(async () => {
   //await userModel.drop();
+  await new Promise((resolve) => setTimeout(resolve, 100));
   await userModel.sequelize.close();
 });
 
