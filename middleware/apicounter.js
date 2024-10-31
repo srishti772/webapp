@@ -1,4 +1,5 @@
 const statsd = require("../config/statsD");
+const { performance } = require("perf_hooks");
 
 const apiCounter = (req, res, next) => {
     const metricKey = `${req.method}_${req.originalUrl}.count`;
@@ -12,9 +13,9 @@ const apiCounter = (req, res, next) => {
 
 const apiTimer = (req, res, next) => {
     const metricKey = `${req.method}_${req.originalUrl}.apiTime`;
-    const start=Date.now();
+    const start=performance.now();
     res.on('finish', () => {
-        const duration=Date.now()-start;
+        const duration=performance.now()-start;
         statsd.timing(metricKey,duration, { label: "TotalTime" });
     });
 

@@ -2,7 +2,7 @@
   "agent": {
     "metrics_collection_interval": 10,
     "logfile": "/var/logs/amazon-cloudwatch-agent.log",
-    "flush_interval": 1 
+    "flush_interval": 1
   },
   "logs": {
     "logs_collected": {
@@ -19,7 +19,7 @@
     "log_stream_name": "cloudwatch_log_stream"
   },
   "metrics": {
-    "namespace": "webapp_v1",
+    "namespace": "webapp_final",
     "metrics_collected": {
       "statsd": {
         "service_address": "127.0.0.1:8125",
