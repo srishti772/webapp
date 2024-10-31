@@ -42,6 +42,6 @@ sudo systemctl start amazon-cloudwatch-agent
 echo "========================================"
 echo "Installing netcat..."
 echo "========================================"
-sudo apt-get install netcat-openbsd
+#sudo apt-get install netcat-openbsd
 
-nc -h
+#nc -h
