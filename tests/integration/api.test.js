@@ -1,14 +1,21 @@
 const request = require("supertest");
 const app = require("../../app");
 const userModel = require("../../model/userModel");
+const statsdClient = require("../../config/statsD"); // Adjust the import as needed
+
 
 beforeAll(async () => {
+  jest.mock("../../config/statsD");
   await userModel.sync({ force: true });
+
 });
+
 afterAll(async () => {
-  //await userModel.drop();
-  await new Promise((resolve) => setTimeout(resolve, 100));
   await userModel.sequelize.close();
+    // Close the StatsD client to send any remaining metrics
+    if (statsdClient && typeof statsdClient.close === 'function') {
+      await statsdClient.close(); // Ensure that the connection is closed
+    }
 });
 
 describe("REGISTER USER POST /v1/user", () => {

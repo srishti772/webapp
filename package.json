@@ -4,7 +4,7 @@
   "main": "server.js",
   "scripts": {
     "test:unit": "cross-env NODE_ENV=test jest --testPathPattern=unit",
-    "test:integration": "cross-env NODE_ENV=test jest --testPathPattern=integration",
+    "test:integration": "cross-env NODE_ENV=test jest --testPathPattern=integration --detectOpenHandles",
     "start": "cross-env NODE_ENV=production nodemon server.js"
   },
   "author": "",
