@@ -1,8 +1,9 @@
 const { Sequelize, DataTypes } = require("sequelize");
 const { db } = require("../config/dbConnection");
+const userProfilePicModel = require("./userProfilePicModel");
 
 const userModel = db.define(
-  "user",
+  "users",
   {
     id: {
       type: DataTypes.UUID,
@@ -61,6 +62,9 @@ userModel.prototype.toJSON = function () {
   delete userObj.password;
   return userObj;
 };
+
+userModel.hasOne(userProfilePicModel, { foreignKey: "user_id", foreignKeyConstraint: true });
+
 
 userModel.addScope('withPassword', {
   attributes: { include: ['password'] },  

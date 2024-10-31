@@ -4,21 +4,26 @@
   "main": "server.js",
   "scripts": {
     "test:unit": "cross-env NODE_ENV=test jest --testPathPattern=unit",
-    "test:integration": "cross-env NODE_ENV=test jest --testPathPattern=integration",
+    "test:integration": "cross-env NODE_ENV=test jest --testPathPattern=integration --detectOpenHandles",
     "start": "cross-env NODE_ENV=production nodemon server.js"
   },
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.682.0",
+    "@aws-sdk/s3-request-presigner": "^3.682.0",
     "a01": "file:",
     "bcrypt": "^5.1.1",
     "dotenv": "^16.4.5",
     "express": "^4.21.0",
+    "multer": "^1.4.5-lts.1",
     "mysql2": "^3.11.3",
+    "node-statsd": "^0.1.1",
     "nodemon": "^3.1.7",
     "sequelize": "^6.37.3",
-    "sqlite3": "^5.1.7"
+    "sqlite3": "^5.1.7",
+    "winston": "^3.15.0"
   },
   "devDependencies": {
     "cross-env": "^7.0.3",

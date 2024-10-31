@@ -1,20 +1,28 @@
 const request = require("supertest");
 const app = require("../../app");
 const userModel = require("../../model/userModel");
+const statsdClient = require("../../config/statsD"); // Adjust the import as needed
+
 
 beforeAll(async () => {
+  jest.mock("../../config/statsD");
   await userModel.sync({ force: true });
-});
-afterAll(async () => {
-  //await userModel.drop();
-  await userModel.sequelize.close();
+
 });
 
-describe("REGISTER USER POST /v2/user", () => {
+afterAll(async () => {
+  await userModel.sequelize.close();
+    // Close the StatsD client to send any remaining metrics
+    if (statsdClient && typeof statsdClient.close === 'function') {
+      await statsdClient.close(); // Ensure that the connection is closed
+    }
+});
+
+describe("REGISTER USER POST /v1/user", () => {
   describe("Given valid user details", () => {
     test("Should respond with 201 Created and the correct payload", async () => {
       //Creating a new user
-      const response = await request(app).post("/v2/user").send({
+      const response = await request(app).post("/v1/user").send({
         first_name: "John",
         last_name: "Doe",
         password: "test123",
@@ -48,7 +56,7 @@ describe("REGISTER USER POST /v2/user", () => {
 
   describe("Given duplicate user details", () => {
     test("Should respond with 400 Bad Request for duplicate user", async () => {
-      const duplicateResponse = await request(app).post("/v2/user").send({
+      const duplicateResponse = await request(app).post("/v1/user").send({
         first_name: "John",
         last_name: "Doe",
         email: "john.doe@example.com",
@@ -93,7 +101,7 @@ describe("REGISTER USER POST /v2/user", () => {
 
     missingFieldsTests.forEach(({ field, payload }) => {
       test(`Should respond with 400 Bad Request when ${field} is missing`, async () => {
-        const response = await request(app).post("/v2/user").send(payload);
+        const response = await request(app).post("/v1/user").send(payload);
         expect(response.status).toBe(400);
       });
     });

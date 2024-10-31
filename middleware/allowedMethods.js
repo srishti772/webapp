@@ -1,17 +1,24 @@
-const allowedMethods = (...httpMethod) => {
+const allowedMethods = (routePermissions) => {
   return (req, res, next) => {
-    if (
-      !httpMethod
-        .map((method) => method.toUpperCase())
-        .includes(req.method.toUpperCase())
-    ) {
-      const methoError = new Error();
-      methoError.statusCode = 405;
-      methoError.message = `${req.method.toUpperCase()} Method not allowed`;
-      return next(methoError);
+    const allowedMethodsForPath = routePermissions[req.path];
+    
+    if (allowedMethodsForPath && !allowedMethodsForPath.includes(req.method.toUpperCase())) {
+      const methodError = new Error();
+      methodError.statusCode = 405;
+      methodError.message = `${req.method.toUpperCase()} Method not allowed on ${req.path}`;
+      return next(methodError);
     }
+
     next();
   };
 };
 
-module.exports = allowedMethods;
+const routePermissions = {
+  "/healthz": ["GET"],
+  "/v1/user": ["POST"],
+  "/v1/user/self": ["GET", "PUT"],
+  "/v1/user/self/pic": ["GET", "POST", "DELETE"],
+  "/healthz": ["GET"],
+};
+
+module.exports = allowedMethods(routePermissions);

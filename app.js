@@ -6,15 +6,21 @@ const authRoutes = require("./routes/auth");
 const errorHandler = require("./middleware/errorHandler");
 const allowedMethods = require("./middleware/allowedMethods");
 const setHeaders = require("./middleware/setHeaders");
+const { apiTimer, apiCounter } = require("./middleware/apicounter");
 
 const app = express();
 
 app.use(setHeaders);
 app.use(express.json());
 
-app.use(/^\/healthz$/, allowedMethods("GET"), healthCheck);
-app.use("/v2/user", allowedMethods("GET", "PUT", "POST"), userRoutes);
-app.use("/authenticated", allowedMethods("POST"), authRoutes);
+app.use(allowedMethods);
+app.use(apiCounter);
+app.use(apiTimer);
+app.use(/^\/healthz$/, healthCheck);
+
+app.use("/v1/user", userRoutes);
+
+app.use("/authenticated", authRoutes);
 
 // Default response for all other paths
 app.all("*", async (req, res, next) => {
