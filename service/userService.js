@@ -74,15 +74,26 @@ const createUser = async (new_user, metricKey) => {
       last_name: new_user.last_name,
       password: await bcrypt.hash(new_user.password, 10),
       email: new_user.email,
-      otp:await bcrypt.hash(code,10),
+      token:await bcrypt.hash(code,10),
       expiresAt:new Date(Date.now() + 2 * 60 * 1000)
     });
     const duration = performance.now() - start;
     statsd.timing(`${metricKey}.createUser.DBWriteTime`, duration);
     logger.debug(`${metricKey}.createUser.DBWriteTime: ${duration}`);
 
-    logger.debug(`Generated OTP: ${code}`);
-    const verificationLink = `http://${process.env.BASE_URL}/verify?user=${new_user.email}&token=${code}`;
+    sendToSNS(new_user,code);
+    
+    return user.toJSON();
+  } catch (err) {
+    const dbError = new Error();
+    dbError.message = err.message || "Unable to Create User";
+    dbError.statusCode = err.statusCode || 503;
+    throw dbError;
+  }
+};
+
+const sendToSNS = async (new_user,code) =>{
+  const verificationLink = `http://${process.env.BASE_URL}/user/verify?email=${new_user.email}&token=${code}`;
 
     const mailOptions = {
       from: process.env.AUTH_EMAIL,
@@ -96,15 +107,7 @@ const createUser = async (new_user, metricKey) => {
     };
     console.log('Generated mailOptions', mailOptions);
 
-    return user.toJSON();
-  } catch (err) {
-    const dbError = new Error();
-    dbError.message = err.message || "Unable to Create User";
-    dbError.statusCode = err.statusCode || 503;
-    throw dbError;
-  }
-};
-
+}
 const getAUser = async (email, metricKey) => {
   try {
     const existingUser = await getUserByEmail(email, metricKey);
@@ -139,7 +142,12 @@ const updateUser = async (email, user, metricKey) => {
       ? await bcrypt.hash(user.password, 10)
       : curruser.password;
     curruser.email = user.email ? user.email : curruser.email;
+    curruser.token = user.token ? user.token : curruser.token;
+    curruser.verified = user.verified ? user.verified : curruser.verified;
+    curruser.expiresAt = user.expiresAt ? user.expiresAt : curruser.expiresAt;
+
     curruser.account_updated = new Date();
+
     const start = performance.now();
     await curruser.save();
     const duration = performance.now() - start;

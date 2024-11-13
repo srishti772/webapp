@@ -1,6 +1,8 @@
 const logData = require("../config/logger/loggerUtil");
 const logger = require("../config/logger/winston");
 const authService = require("../service/authService");
+const userService = require("../service/userService");
+
 const { validateUserFields } = require("./userController");
 
 
@@ -20,7 +22,7 @@ const verify = (req, res, next) => {
     return next(error);
   }
 
-  const allowedParams = ['user', 'token'];
+  const allowedParams = ['email', 'token'];
   const queryParams = Object.keys(req.query);
 
   const invalidParams = queryParams.filter(param => !allowedParams.includes(param));
@@ -30,19 +32,40 @@ const verify = (req, res, next) => {
     return next(error);
   }
 
-  const user = req.query.user;
+  const user = req.query.email;
   const token = req.query.token;
 
   if (!user || !token) {
-    const error = new Error("Missing required query parameters: 'user' and 'token'");
+    const error = new Error("Missing required query parameters: 'email' and 'token'");
     error.statusCode = 400;
     return next(error);
   }
 
 
-  console.log("***********",req.query, (req.query.user));
-  
-  return res.status(200).end();
+  authService
+    .verify(user, token)
+    .then((userData) => {
+      userService.updateUser(user, userData, `${req.method}_${req.originalUrl}`)
+      
+    })
+    .then((updatedUser) => {
+      logData(
+        req.method,
+        req.originalUrl,
+        req.get("user-agent"),
+        "info",
+        req.body,
+        200,
+        "User verified successfully",
+        updatedUser
+      );
+
+      return res.status(200).end();
+    })
+    .catch((err) => {
+
+      return next(err);
+    });
 
 };
 

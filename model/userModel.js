@@ -42,7 +42,7 @@ const userModel = db.define(
       allowNull: false,
       defaultValue: false, 
     },
-    otp: {
+    token: {
       type: DataTypes.STRING, 
       allowNull: false,
     },
@@ -64,7 +64,7 @@ const userModel = db.define(
   {
     timestamps: false,
     defaultScope: {
-      attributes: { exclude: ["password", "verified","otp","expiresAt"] },
+      attributes: { exclude: ["password", "verified","token","expiresAt"] },
     },
  
   }
@@ -74,7 +74,7 @@ userModel.prototype.toJSON = function () {
   const userObj = this.get();
   delete userObj.password;
   delete userObj.verified;
-  delete userObj.otp;
+  delete userObj.token;
   delete userObj.expiresAt;
   return userObj;
 };
@@ -83,7 +83,7 @@ userModel.hasOne(userProfilePicModel, { foreignKey: "user_id", foreignKeyConstra
 
 
 userModel.addScope('withAllDetails', {
-  attributes: { include: ['password', 'verified','otp','expiresAt'] },  
+  attributes: { include: ['password', 'verified','token','expiresAt'] },  
 });
 
 module.exports = userModel;
