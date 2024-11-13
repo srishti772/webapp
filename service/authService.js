@@ -18,15 +18,24 @@ const authorize = async (authorization_header) => {
 }
 
 const checkUserExists = async (email) => {
-    const user = await userModel.scope('withPassword').findOne({
+    const user = await userModel.scope('withAllDetails').findOne({
+       
         where: { email },
     });
 
     if (!user) {
+        
         const notFoundError = new Error('User not found');
-        notFoundError.statusCode = 404;
+        notFoundError.statusCode = 401;
         throw notFoundError;
     }
+    if(!user.verified){
+        
+        const notVerifiedErr = new Error('User not verified');
+        notVerifiedErr.statusCode = 401;
+        throw notVerifiedErr;
+    }
+   
     return user;
 }
 

@@ -1,5 +1,8 @@
 const userModel = require("../model/userModel");
 const bcrypt = require("bcrypt");
+const logger = require("../config/logger/winston");
+const crypto = require('crypto');
+
 const {
   S3Client,
   PutObjectCommand,
@@ -15,6 +18,11 @@ const { v4: uuidv4 } = require("uuid");
 const { performance } = require("perf_hooks");
 
 require("dotenv").config();
+
+function generateVerificationCode(length = 12) {
+  return crypto.randomBytes(Math.ceil(length / 2)).toString('hex').slice(0, length);
+}
+
 const getUserByEmail = async (email, metricKey) => {
   try {
     let start = performance.now();
@@ -23,6 +31,7 @@ const getUserByEmail = async (email, metricKey) => {
     });
     let duration = performance.now() - start;
     statsd.timing(`${metricKey}.getUserByEmail.Duration`, duration);
+    logger.debug(`${metricKey}.getUserByEmail.Duration: ${duration}`);
     return user;
   } catch (err) {
     const dbError = new Error(`Unable to fetch user`);
@@ -40,6 +49,8 @@ const getProfilePicByUserId = async (id, metricKey) => {
     });
     const duration = performance.now() - start;
     statsd.timing(`${metricKey}.getProfilePicByUserId.Duration`, duration);
+    logger.debug(`${metricKey}.getProfilePicByUserId.Duration: ${duration}`);
+
     return profilePic;
   } catch (err) {
     const dbError = new Error(`Unable to fetch profile picture`);
@@ -57,14 +68,34 @@ const createUser = async (new_user, metricKey) => {
   }
   try {
     const start = performance.now();
+    const code=generateVerificationCode();
     const user = await userModel.create({
       first_name: new_user.first_name,
       last_name: new_user.last_name,
       password: await bcrypt.hash(new_user.password, 10),
       email: new_user.email,
+      otp:await bcrypt.hash(code,10),
+      expiresAt:new Date(Date.now() + 2 * 60 * 1000)
     });
     const duration = performance.now() - start;
     statsd.timing(`${metricKey}.createUser.DBWriteTime`, duration);
+    logger.debug(`${metricKey}.createUser.DBWriteTime: ${duration}`);
+
+    logger.debug(`Generated OTP: ${code}`);
+    const verificationLink = `http://${process.env.BASE_URL}/verify?user=${encodeURIComponent(new_user.email)}&token=${code}`;
+
+    const mailOptions = {
+      from: process.env.AUTH_EMAIL,
+      to: new_user.email,
+      subject: "Verify Your Email",
+      html: `
+        <p>Follow the link below to verify your email address and complete the registration.</p>
+        <p>This link <b>expires in 2 minutes</b>.</p>
+        <a href="${verificationLink}">Click here</a>
+      `,
+    };
+    console.log('Generated mailOptions', mailOptions);
+
     return user.toJSON();
   } catch (err) {
     const dbError = new Error();
@@ -113,6 +144,7 @@ const updateUser = async (email, user, metricKey) => {
     await curruser.save();
     const duration = performance.now() - start;
     statsd.timing(`${metricKey}.updateUser.DBUpdateTime`, duration);
+    logger.debug(`${metricKey}.updateUser.DBUpdateTime: ${duration}`);
   } catch (err) {
     const dbError = new Error();
     dbError.message = err.message || "Unable to Update User";
@@ -154,6 +186,7 @@ const uploadProfilePic = async (userEmail, file, metricKey) => {
 
     let duration = performance.now() - start;
     statsd.timing(`${metricKey}.uploadProfilePic.S3UploadTime`, duration);
+    logger.debug(`${metricKey}.uploadProfilePic.S3UploadTime: ${duration}`);
 
     start = performance.now();
     const metadata = await userProfilePicModel.create({
@@ -165,6 +198,7 @@ const uploadProfilePic = async (userEmail, file, metricKey) => {
     });
     duration = Date.now() - start;
     statsd.timing(`${metricKey}.uploadProfilePic.DBWriteTime`, duration);
+    logger.debug(`${metricKey}.uploadProfilePic.DBWriteTime: ${duration}`);
     return metadata.toJSON();
   } catch (err) {
     const s3Error = new Error();
@@ -198,6 +232,7 @@ const getProfilePic = async (userEmail, metricKey) => {
 
     const duration = performance.now() - start;
     statsd.timing(`${metricKey}.getProfilePic.S3SignedUrlTime`, duration);
+    logger.debug(`${metricKey}.getProfilePic.S3SignedUrlTime: ${duration}`);
 
     //profilePic.url = signedUrl;
     return profilePic;
@@ -244,6 +279,7 @@ const deleteProfilePic = async (userEmail, metricKey) => {
 
     let duration = performance.now() - start;
     statsd.timing(`${metricKey}.deleteProfilePic.S3DeleteTime`, duration);
+    logger.debug(`${metricKey}.deleteProfilePic.S3DeleteTime: ${duration}`);
 
     start = performance.now();
     await userProfilePicModel.destroy({
@@ -252,6 +288,7 @@ const deleteProfilePic = async (userEmail, metricKey) => {
 
     duration = performance.now() - start;
     statsd.timing(`${metricKey}.deleteProfilePic.DBDeleteTime`, duration);
+    logger.debug(`${metricKey}.deleteProfilePic.DBDeleteTime: ${duration}`);
   } catch (err) {
     const dbError = new Error();
     dbError.message = err.message || "Unable to retrieve profile picture.";
