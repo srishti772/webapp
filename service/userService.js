@@ -82,7 +82,7 @@ const createUser = async (new_user, metricKey) => {
     logger.debug(`${metricKey}.createUser.DBWriteTime: ${duration}`);
 
     logger.debug(`Generated OTP: ${code}`);
-    const verificationLink = `http://${process.env.BASE_URL}/verify?user=${encodeURIComponent(new_user.email)}&token=${code}`;
+    const verificationLink = `http://${process.env.BASE_URL}/verify?user=${new_user.email}&token=${code}`;
 
     const mailOptions = {
       from: process.env.AUTH_EMAIL,

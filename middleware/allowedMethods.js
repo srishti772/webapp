@@ -18,7 +18,8 @@ const routePermissions = {
   "/v1/user": ["POST"],
   "/v1/user/self": ["GET", "PUT"],
   "/v1/user/self/pic": ["GET", "POST", "DELETE"],
-  "/healthz": ["GET"],
+  "/verify" : ["GET"],
+  "/authenticated" : ["POST"],
 };
 
 module.exports = allowedMethods(routePermissions);
