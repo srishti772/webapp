@@ -20,6 +20,7 @@ const routePermissions = {
   "/v1/user/self/pic": ["GET", "POST", "DELETE"],
   "/user/verify" : ["GET"],
   "/user/authenticated" : ["POST"],
+  "/user/reverify" : ["POST"],
 };
 
 module.exports = allowedMethods(routePermissions);

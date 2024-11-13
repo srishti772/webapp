@@ -1,6 +1,7 @@
 const { Sequelize, DataTypes } = require("sequelize");
 const { db } = require("../config/dbConnection");
 const userProfilePicModel = require("./userProfilePicModel");
+const userVerification = require("./userVerification");
 
 const userModel = db.define(
   "users",
@@ -42,14 +43,7 @@ const userModel = db.define(
       allowNull: false,
       defaultValue: false, 
     },
-    token: {
-      type: DataTypes.STRING, 
-      allowNull: false,
-    },
-    expiresAt: {
-      type: DataTypes.DATE,
-      allowNull: false,
-    },
+   
     account_created: {
       type: DataTypes.DATE,
       allowNull: true,
@@ -64,7 +58,7 @@ const userModel = db.define(
   {
     timestamps: false,
     defaultScope: {
-      attributes: { exclude: ["password", "verified","token","expiresAt"] },
+      attributes: { exclude: ["password", "verified"] },
     },
  
   }
@@ -74,16 +68,15 @@ userModel.prototype.toJSON = function () {
   const userObj = this.get();
   delete userObj.password;
   delete userObj.verified;
-  delete userObj.token;
-  delete userObj.expiresAt;
   return userObj;
 };
 
 userModel.hasOne(userProfilePicModel, { foreignKey: "user_id", foreignKeyConstraint: true });
+userModel.hasOne(userVerification, { foreignKey: "user_id", foreignKeyConstraint: true });
 
 
 userModel.addScope('withAllDetails', {
-  attributes: { include: ['password', 'verified','token','expiresAt'] },  
+  attributes: { include: ['password', 'verified'] },  
 });
 
 module.exports = userModel;

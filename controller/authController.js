@@ -3,7 +3,7 @@ const logger = require("../config/logger/winston");
 const authService = require("../service/authService");
 const userService = require("../service/userService");
 
-const { validateUserFields } = require("./userController");
+const { validateUserFields, validateQueryParams } = require("./userController");
 
 
 const verify = (req, res, next) => {
@@ -21,25 +21,14 @@ const verify = (req, res, next) => {
     error.statusCode = 400;
     return next(error);
   }
-
   const allowedParams = ['email', 'token'];
-  const queryParams = Object.keys(req.query);
-
-  const invalidParams = queryParams.filter(param => !allowedParams.includes(param));
-  if (invalidParams.length > 0) {
-    const error = new Error(`Invalid query parameter(s): ${invalidParams.join(', ')}`);
-    error.statusCode = 400;
-    return next(error);
-  }
+  if(!validateQueryParams(req,res,next,allowedParams)){
+    return;
+  };
+  
 
   const user = req.query.email;
   const token = req.query.token;
-
-  if (!user || !token) {
-    const error = new Error("Missing required query parameters: 'email' and 'token'");
-    error.statusCode = 400;
-    return next(error);
-  }
 
 
   authService
@@ -95,7 +84,36 @@ const login = (req, res, next) => {
     });
 };
 
+const reverify = (req,res,next) => {
+  const allowedField = new Set(["email"]);
+  const userData = req.body;
+
+  const isValid = validateUserFields(
+    userData,
+    allowedField,
+    next,
+    allowedField
+  ) && validateQueryParams(req,res,next,null);
+
+  if(!isValid){
+    return;
+  }
+
+  authService.reverify(userData.email)
+  .then((created)=>{
+    console.log(created);
+    logData(req.method, req.originalUrl, req.get('user-agent'), 'info', req.body, 200, 'Reverification Message Sent');
+
+    return res.status(200).end();
+  }).catch((err) => {
+    return next(err);
+  });
+
+
+}
+
 module.exports = {
   login,
-  verify
+  verify,
+  reverify
 };

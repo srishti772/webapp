@@ -16,6 +16,7 @@ const statsd = require("../config/statsD");
 const userProfilePicModel = require("../model/userProfilePicModel");
 const { v4: uuidv4 } = require("uuid");
 const { performance } = require("perf_hooks");
+const userVerification = require("../model/userVerification");
 
 require("dotenv").config();
 
@@ -74,14 +75,17 @@ const createUser = async (new_user, metricKey) => {
       last_name: new_user.last_name,
       password: await bcrypt.hash(new_user.password, 10),
       email: new_user.email,
-      token:await bcrypt.hash(code,10),
-      expiresAt:new Date(Date.now() + 2 * 60 * 1000)
+      verified: false
     });
+
+    
+
     const duration = performance.now() - start;
     statsd.timing(`${metricKey}.createUser.DBWriteTime`, duration);
     logger.debug(`${metricKey}.createUser.DBWriteTime: ${duration}`);
 
-    sendToSNS(new_user,code);
+
+    sendToSNS(user,code);
     
     return user.toJSON();
   } catch (err) {
@@ -91,13 +95,20 @@ const createUser = async (new_user, metricKey) => {
     throw dbError;
   }
 };
+const sendToSNS = async (user, code) => {
+  try {
+    const [verification, created] = await userVerification.upsert({
+      user_id: user.id,
+      token: await bcrypt.hash(code, 10),
+      expiresAt: new Date(Date.now() + 2 * 60 * 1000)
+    },
+    {logging: console.log});
 
-const sendToSNS = async (new_user,code) =>{
-  const verificationLink = `http://${process.env.BASE_URL}/user/verify?email=${new_user.email}&token=${code}`;
+    const verificationLink = `http://${process.env.BASE_URL}/user/verify?email=${user.email}&token=${code}`;
 
     const mailOptions = {
       from: process.env.AUTH_EMAIL,
-      to: new_user.email,
+      to: user.email,
       subject: "Verify Your Email",
       html: `
         <p>Follow the link below to verify your email address and complete the registration.</p>
@@ -105,9 +116,18 @@ const sendToSNS = async (new_user,code) =>{
         <a href="${verificationLink}">Click here</a>
       `,
     };
+
     console.log('Generated mailOptions', mailOptions);
 
-}
+    return created;  
+  } catch (err) {
+    const dbError = new Error();
+    dbError.message = err.message || "Unable to send to SNS";
+    dbError.statusCode = err.statusCode || 503;
+    throw dbError;
+  }
+};
+
 const getAUser = async (email, metricKey) => {
   try {
     const existingUser = await getUserByEmail(email, metricKey);
@@ -142,9 +162,7 @@ const updateUser = async (email, user, metricKey) => {
       ? await bcrypt.hash(user.password, 10)
       : curruser.password;
     curruser.email = user.email ? user.email : curruser.email;
-    curruser.token = user.token ? user.token : curruser.token;
     curruser.verified = user.verified ? user.verified : curruser.verified;
-    curruser.expiresAt = user.expiresAt ? user.expiresAt : curruser.expiresAt;
 
     curruser.account_updated = new Date();
 
@@ -312,4 +330,7 @@ module.exports = {
   uploadProfilePic,
   getProfilePic,
   deleteProfilePic,
+  sendToSNS,
+  generateVerificationCode
+
 };

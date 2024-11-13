@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt');
 const userModel = require('../model/userModel');
 const userService = require("./userService");
+const userVerification = require('../model/userVerification');
 
 const authorize = async (authorization_header) => {
     try { const userData = new Buffer.from(authorization_header.split(' ')[1],'base64').toString().split(':');
@@ -74,25 +75,28 @@ const verify = async (email, token) => {
             throw verificationErr;              
         }
 
-        if (!user.token) {
+        console.log(user.id);
+        const verificationDetails = await userVerification.findOne({
+            where: { user_id: user.id }
+        });
+
+        if (!verificationDetails || !verificationDetails.token || !token) {
             const verificationErr = new Error("No token to information found for user");
-            verificationErr.statusCode = err.statusCode || 400; 
+            verificationErr.statusCode =  400; 
             throw verificationErr;              
         }
 
-            if (new Date() > new Date(user.expiresAt)) {
+            if (new Date() > new Date(verificationDetails.expiresAt)) {
                 const verificationErr = new Error("Code is expired");
                 verificationErr.statusCode = 400; 
                 throw verificationErr;              
             }
 
             
-        await checkPasswordorToken(token, user.token);
+        await checkPasswordorToken(token, verificationDetails.token);
 
     const userData = {
         verified : true,
-        token : "",
-        expiresAt : "",
     }
     return userData;
     
@@ -104,8 +108,29 @@ const verify = async (email, token) => {
     }
 };
 
+
+
+const reverify = async (email) => {
+    try {
+        const user = await checkUserExists(email);
+        if (user.verified) {
+            const verificationErr = new Error("User is already verified");
+            verificationErr.statusCode = 400; 
+            throw verificationErr;              
+        }
+
+        return userService.sendToSNS(user, userService.generateVerificationCode());
+    
+
+    } catch (err) {
+        const dbError = new Error(err.message);
+        dbError.statusCode = err.statusCode || 503; 
+        throw dbError;
+    }
+};
 module.exports = {
     login,
     authorize,
-    verify
+    verify,
+    reverify,
 };
