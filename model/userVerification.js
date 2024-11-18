@@ -6,15 +6,27 @@ const userVerification = db.define("userVerificationEmail", {
     type: DataTypes.STRING, 
     allowNull: false,
   },
+  id: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey: true,
+    allowNull: false,
+  },
   user_id: {
     type: DataTypes.UUID,
     allowNull: false,
-    primaryKey: true,
     references: {
-      model: "users", 
-      key: "id",
+      model: 'users', // Reference to userModel
+      key: 'id',        // Foreign key on userModel's 'id'
     },
-    unique: true,
+  },
+  email: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    validate: {
+      isEmail: true,
+      notEmpty: true,
+    },
   },
   createdAt: {
     type: DataTypes.DATE,
@@ -25,6 +37,12 @@ const userVerification = db.define("userVerificationEmail", {
     type: DataTypes.DATE,
     allowNull: false,
   },
+  /**mailgunACK: {
+    type: DataTypes.STRING, 
+  },
+  lastEmailSent: {
+    type: DataTypes.DATE,
+    },**/
 }, {
   timestamps: false,
   indexes: [

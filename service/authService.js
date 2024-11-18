@@ -27,12 +27,9 @@ const authorize = async (authorization_header) => {
 
 const checkUserExists = async (email) => {
     const user = await userModel.scope('withAllDetails').findOne({
-       
         where: { email },
     });
-
     if (!user) {
-        
         const notFoundError = new Error('User not found');
         notFoundError.statusCode = 401;
         throw notFoundError;
@@ -77,7 +74,7 @@ const verify = async (email, token) => {
 
         console.log(user.id);
         const verificationDetails = await userVerification.findOne({
-            where: { user_id: user.id }
+            where: { email: user.email }
         });
 
         if (!verificationDetails || !verificationDetails.token || !token) {
@@ -119,7 +116,7 @@ const reverify = async (email) => {
             throw verificationErr;              
         }
 
-        return userService.sendToSNS(user, userService.generateVerificationCode());
+        return await userService.sendToSNS(user, userService.generateVerificationCode());
     
 
     } catch (err) {

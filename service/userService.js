@@ -4,7 +4,6 @@ const logger = require("../config/logger/winston");
 const crypto = require('crypto');
 
 const {
-  S3Client,
   PutObjectCommand,
   GetObjectCommand,
   DeleteObjectCommand,
@@ -12,6 +11,10 @@ const {
 } = require("@aws-sdk/client-s3");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const s3Client = require("../config/s3Client");
+const snsClient = require("../config/snsClient");
+const {  PublishCommand } = require('@aws-sdk/client-sns');
+
+
 const statsd = require("../config/statsD");
 const userProfilePicModel = require("../model/userProfilePicModel");
 const { v4: uuidv4 } = require("uuid");
@@ -85,7 +88,7 @@ const createUser = async (new_user, metricKey) => {
     logger.debug(`${metricKey}.createUser.DBWriteTime: ${duration}`);
 
 
-    sendToSNS(user,code);
+    await sendToSNS(user,code);
     
     return user.toJSON();
   } catch (err) {
@@ -97,29 +100,40 @@ const createUser = async (new_user, metricKey) => {
 };
 const sendToSNS = async (user, code) => {
   try {
+
+    
+
     const [verification, created] = await userVerification.upsert({
       user_id: user.id,
+      email: user.email,
       token: await bcrypt.hash(code, 10),
       expiresAt: new Date(Date.now() + 2 * 60 * 1000)
     },
-    {logging: console.log});
+   );
 
     const verificationLink = `http://${process.env.BASE_URL}/user/verify?email=${user.email}&token=${code}`;
 
     const mailOptions = {
-      from: process.env.AUTH_EMAIL,
       to: user.email,
       subject: "Verify Your Email",
-      html: `
-        <p>Follow the link below to verify your email address and complete the registration.</p>
-        <p>This link <b>expires in 2 minutes</b>.</p>
-        <a href="${verificationLink}">Click here</a>
-      `,
+      html: `Follow the link below to verify your email address and complete the registration.
+        This link expires in 2 minutes.
+        ${verificationLink}`
+      ,
     };
 
-    console.log('Generated mailOptions', mailOptions);
+    const topic_arn = process.env.SNS_TOPIC_ARN;
 
-    return created;  
+    const params = {
+      Message: JSON.stringify(mailOptions),
+      TopicArn: topic_arn
+    };
+    
+    const command = new PublishCommand(params);
+    await snsClient.send(command);
+    logger.debug(`Sent to SNS: ${params.Message}`);
+
+    return params;  
   } catch (err) {
     const dbError = new Error();
     dbError.message = err.message || "Unable to send to SNS";
