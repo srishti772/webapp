@@ -123,8 +123,8 @@ jobs:
           echo "Template Version created: $TEMPLATE_VERSION"
           echo "TEMPLATE_VERSION=$TEMPLATE_VERSION" >> $GITHUB_ENV
 
-          aws ec2 modify-launch-template 
-          --launch-template-name $LAUNCH_TEMPLATE_NAME
+          aws ec2 modify-launch-template \
+          --launch-template-name $LAUNCH_TEMPLATE_NAME \
           --default-version $TEMPLATE_VERSION
 
       - name: ASG Update and Instance Refresh
