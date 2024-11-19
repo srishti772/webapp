@@ -110,13 +110,13 @@ jobs:
         run: |
           echo "Creating Launch template"
           aws ec2 create-launch-template-version \
-          --launch-template-name csye6225-launchtemplate \
+          --launch-template-name $LAUNCH_TEMPLATE_NAME \
           --version-description "Updated AMI version" \
           --launch-template-data "{\"ImageId\":\"$IMAGE_ID\"}"
 
 
           TEMPLATE_VERSION=$(aws ec2 describe-launch-templates \
-          --launch-template-names csye6225-launchtemplate \
+          --launch-template-names $LAUNCH_TEMPLATE_NAME \
           --query "LaunchTemplates[0].LatestVersionNumber" \
           --output text)
 
@@ -124,7 +124,7 @@ jobs:
           echo "TEMPLATE_VERSION=$TEMPLATE_VERSION" >> $GITHUB_ENV
 
           aws ec2 modify-launch-template 
-          --launch-template-name csye6225-launchtemplate 
+          --launch-template-name $LAUNCH_TEMPLATE_NAME
           --default-version $TEMPLATE_VERSION
 
       - name: ASG Update and Instance Refresh
