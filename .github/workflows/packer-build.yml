@@ -134,10 +134,9 @@ jobs:
           --auto-scaling-group-name $ASG_NAME \
           --launch-template LaunchTemplateName="$LAUNCH_TEMPLATE_NAME",Version=$TEMPLATE_VERSION
           
-          INSTANCE_REFRESH_ID=$(aws autoscaling start-instance-refresh \
-          --auto-scaling-group-name $ASG_NAME --strategy Rolling)
+          aws autoscaling start-instance-refresh \
+          --auto-scaling-group-name $ASG_NAME --strategy Rolling
           
-          echo "INSTANCE_REFRESH_ID=$INSTANCE_REFRESH_ID" >> $GITHUB_ENV
 
       - name: Wait for instance refresh to complete
         run: | 
