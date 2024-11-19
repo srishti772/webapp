@@ -20,7 +20,8 @@ app.use(/^\/healthz$/, healthCheck);
 
 app.use("/v1/user", userRoutes);
 
-app.use("/authenticated", authRoutes);
+app.use("/user", authRoutes);
+
 
 // Default response for all other paths
 app.all("*", async (req, res, next) => {

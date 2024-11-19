@@ -4,6 +4,36 @@ const upload = require("../config/multer");
 const statsd = require("../config/statsD");
 const userService = require("../service/userService");
 
+const validateQueryParams = (req, res, next, requiredParams) => {
+  const queryParams = Object.keys(req.query);
+  if(!requiredParams && queryParams.length>0){
+    const error = new Error(`query parameter(s) not allowed: ${queryParams.join(', ')}`);
+    error.statusCode = 400;
+    return next(error);
+  }
+  if(queryParams){
+  const invalidParams = queryParams.filter(param => !requiredParams.includes(param));
+  
+  if (invalidParams.length > 0) {
+    const error = new Error(`Invalid query parameter(s): ${invalidParams.join(', ')}`);
+    error.statusCode = 400;
+    return next(error);
+  }}
+
+  if(requiredParams){
+  const missingParams = requiredParams.filter(param => !req.query[param]);
+
+  if (missingParams.length > 0) {
+    const error = new Error(`Missing required query parameter(s): ${missingParams.join(', ')}`);
+    error.statusCode = 400;
+    return next(error);
+  }}
+
+
+return true;
+};
+
+
 const validateUserFields = (userData, requiredfields, next, allowedField) => {
   if (requiredfields) {
     for (const field of requiredfields) {
@@ -78,8 +108,9 @@ const createUser = (req, res, next) => {
     requiredfields,
     next,
     requiredfields
-  );
+  ) && validateQueryParams(req,res,next,null);
   if (!isValid) return;
+
 
   userService
     .createUser(userData, `${req.method}_${req.originalUrl}`)
@@ -117,6 +148,9 @@ const getAUser = (req, res, next) => {
     error.statusCode = 400;
     return next(error);
   }
+
+  const isValid = validateQueryParams(req,res,next,null);
+  if (!isValid) return;
   const email = req.authenticatedUser;
 
   userService
@@ -144,7 +178,7 @@ const updateUser = (req, res, next) => {
   const userData = req.body;
   const userId = req.authenticatedUser;
   const allowedField = new Set(["first_name", "last_name", "password"]);
-  const isValid = validateUserFields(userData, null, next, allowedField);
+  const isValid = validateUserFields(userData, null, next, allowedField) && validateQueryParams(req,res,next,null);
   if (!isValid) return;
   userService
     .updateUser(userId, userData, `${req.method}_${req.originalUrl}`)
@@ -174,6 +208,8 @@ const uploadProfilePic = (req, res, next) => {
     error.statusCode = 400;
     return next(error);
   }
+  const isValid = validateQueryParams(req,res,next,null);
+  if (!isValid) return;
 
   const file = req.file;
   const userEmail = req.authenticatedUser;
@@ -228,6 +264,8 @@ const getProfilePic = (req, res, next) => {
     error.statusCode = 400;
     return next(error);
   }
+  const isValid = validateQueryParams(req,res,next,null);
+  if (!isValid) return;
   const userEmail = req.authenticatedUser;
 
   userService
@@ -264,6 +302,8 @@ const deleteProfilePic = (req, res, next) => {
     error.statusCode = 400;
     return next(error);
   }
+  const isValid = validateQueryParams(req,res,next,null);
+  if (!isValid) return;
   const userEmail = req.authenticatedUser;
 
   userService
@@ -293,4 +333,5 @@ module.exports = {
   uploadProfilePic,
   getProfilePic,
   deleteProfilePic,
+  validateQueryParams,
 };

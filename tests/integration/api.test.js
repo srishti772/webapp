@@ -1,21 +1,40 @@
 const request = require("supertest");
 const app = require("../../app");
 const userModel = require("../../model/userModel");
+const userVerification = require("../../model/userVerification");
 const statsdClient = require("../../config/statsD"); // Adjust the import as needed
+const { checkDbConnection, syncDb, sequelize } = require("../../config/dbConnection");
+const snsClient = require("@aws-sdk/client-sns"); 
+
+
+// Mock dependencies
+jest.mock('@aws-sdk/client-sns', () => {
+  return {
+    SNSClient: jest.fn(() => ({
+      send: jest.fn(),
+    })),
+    PublishCommand: jest.fn(),
+  };
+});
+jest.mock("../../config/statsD", () => ({
+  timing: jest.fn(),
+  increment: jest.fn(),
+}));
 
 
 beforeAll(async () => {
-  jest.mock("../../config/statsD");
-  await userModel.sync({ force: true });
-
+  try {
+    await syncDb();
+  } catch (error) {
+    console.error("Unable to connect the database", error.message);
+  }
 });
 
 afterAll(async () => {
-  await userModel.sequelize.close();
-    // Close the StatsD client to send any remaining metrics
-    if (statsdClient && typeof statsdClient.close === 'function') {
-      await statsdClient.close(); // Ensure that the connection is closed
-    }
+ // await sequelize.close();
+  if (statsdClient && typeof statsdClient.close === "function") {
+    await statsdClient.close();
+  }
 });
 
 describe("REGISTER USER POST /v1/user", () => {
