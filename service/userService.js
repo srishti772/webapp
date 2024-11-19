@@ -116,9 +116,17 @@ const sendToSNS = async (user, code) => {
     const mailOptions = {
       to: user.email,
       subject: "Verify Your Email",
-      html: `Follow the link below to verify your email address and complete the registration.
+      html: `
+        Dear ${user.first_name}  ${user.last_name},
+        Thank you for registering with us! To complete your registration, please verify your email address by clicking the link below:
         This link expires in 2 minutes.
-        ${verificationLink}`
+        
+        ${verificationLink}
+
+        This is an auto-generated email, so please do not reply to it. If you have any questions or need assistance, feel free to reach out to our support team at support@${process.env.BASE_URL}.
+        Best regards,
+        ${process.env.BASE_URL}`
+       
       ,
     };
 

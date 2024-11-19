@@ -28,11 +28,11 @@ jobs:
       - name: Run Unit Tests
         run: npm run test:unit
 
-      - name: Set up AWS CLI
+      - name: Set up AWS CLI for Dev
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
           aws-region: ${{ vars.AWS_REGION }}
 
       - name: Set up Packer
@@ -86,3 +86,81 @@ jobs:
         with:
           name: packer-manifest
           path: ./packer/manifest.json
+
+      - name: Set up AWS CLI for Demo
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_DEMO }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEMO }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+
+      - name: Set ASG and Launch Template Names
+        run: |
+          cd packer
+          IMAGE_ID=$(jq -r '.builds[-1].artifact_id' manifest.json | cut -d ":" -f2)
+
+          echo "ASG_NAME=${{ vars.ASG_NAME }}" >> $GITHUB_ENV
+          echo "LAUNCH_TEMPLATE_NAME=${{ vars.LAUNCH_TEMPLATE_NAME }}" >> $GITHUB_ENV
+          echo "IMAGE_ID=$IMAGE_ID" >> $GITHUB_ENV
+
+          echo "IMAGE_ID used: $IMAGE_ID, ASG used: $ASG_NAME, Launch Template used: $LAUNCH_TEMPLATE_NAME"
+
+      - name: Create Launch Template
+        run: |
+          echo "Creating Launch template"
+          aws ec2 create-launch-template-version \
+          --launch-template-name csye6225-launchtemplate \
+          --version-description "Updated AMI version" \
+          --launch-template-data "{\"ImageId\":\"$IMAGE_ID\"}"
+
+
+          TEMPLATE_VERSION=$(aws ec2 describe-launch-templates \
+          --launch-template-names csye6225-launchtemplate \
+          --query "LaunchTemplates[0].LatestVersionNumber" \
+          --output text)
+
+          echo "Template Version created: $TEMPLATE_VERSION"
+          echo "TEMPLATE_VERSION=$TEMPLATE_VERSION" >> $GITHUB_ENV
+
+          aws ec2 modify-launch-template 
+          --launch-template-name csye6225-launchtemplate 
+          --default-version $TEMPLATE_VERSION
+
+      - name: ASG Update and Instance Refresh
+        run: |          
+          aws autoscaling update-auto-scaling-group \
+          --auto-scaling-group-name $ASG_NAME \
+          --launch-template LaunchTemplateName="$LAUNCH_TEMPLATE_NAME",Version=$TEMPLATE_VERSION
+          
+          INSTANCE_REFRESH_ID=$(aws autoscaling start-instance-refresh \
+          --auto-scaling-group-name $ASG_NAME --strategy Rolling)
+          
+          echo "INSTANCE_REFRESH_ID=$INSTANCE_REFRESH_ID" >> $GITHUB_ENV
+
+      - name: Wait for instance refresh to complete
+        run: | 
+          while true;
+          do
+            INSTANCE_REFRESH_STATUS=$(aws autoscaling describe-instance-refreshes \
+            --auto-scaling-group-name $ASG_NAME  \
+            --query "InstanceRefreshes[0].Status" --output text)
+          
+          printf "%s\n" "$INSTANCE_REFRESH_STATUS"
+
+          if [ "$INSTANCE_REFRESH_STATUS" = "Successful" ]; then
+            printf "Instance Refresh "Successful""
+            printf "%s\n" "$INSTANCE_REFRESH_STATUS"
+            exit 0 
+          fi
+
+          if [ "$INSTANCE_REFRESH_STATUS" = "Cancelling" ] || \
+            [ "$INSTANCE_REFRESH_STATUS" = "Cancelled" ] || \
+            [ "$INSTANCE_REFRESH_STATUS" = "Failed" ]; then
+            printf "Instance refresh failed or was cancelled. Exiting with error.\n"
+            exit 1 
+          fi
+
+          sleep 10
+          done         
+          
