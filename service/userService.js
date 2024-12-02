@@ -118,7 +118,8 @@ const sendToSNS = async (user, code) => {
       subject: "Verify Your Email",
       html: `
         Dear ${user.first_name}  ${user.last_name},
-        Thank you for registering with us! To complete your registration, please verify your email address by clicking the link below:
+        Thank you for registering with us! 
+        To complete your registration, please verify your email address by clicking the link below:
         This link expires in 2 minutes.
         
         ${verificationLink}

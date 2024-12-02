@@ -39,9 +39,16 @@ sudo dpkg -i amazon-cloudwatch-agent.deb
 sudo systemctl enable amazon-cloudwatch-agent
 sudo systemctl start amazon-cloudwatch-agent
 
-echo "========================================"
-echo "Installing netcat..."
-echo "========================================"
-#sudo apt-get install netcat-openbsd
 
-#nc -h
+echo "Installing AWS CLI v2..."
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
+rm -rf awscliv2.zip aws/
+aws --version
+
+# Install jq
+echo "Installing jq..."
+sudo apt-get update
+sudo apt-get install -y jq
+jq --version

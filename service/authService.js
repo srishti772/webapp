@@ -11,7 +11,7 @@ const authorize = async (authorization_header) => {
     if(!user.verified){
         
         const notVerifiedErr = new Error('User not verified');
-        notVerifiedErr.statusCode = 401;
+        notVerifiedErr.statusCode = 403;
         throw notVerifiedErr;
     }
     await checkPasswordorToken(password, user.password);
