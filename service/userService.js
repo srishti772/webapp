@@ -111,7 +111,7 @@ const sendToSNS = async (user, code) => {
     },
    );
 
-    const verificationLink = `http://${process.env.BASE_URL}/user/verify?email=${user.email}&token=${code}`;
+    const verificationLink = `https://${process.env.BASE_URL}/user/verify?email=${user.email}&token=${code}`;
 
     const mailOptions = {
       to: user.email,
